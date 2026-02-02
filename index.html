@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bevel Creatives</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="BevelCreatives_transparent.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="BevelCreatives_transparent.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="BevelCreatives_transparent.png">
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<script>
+function sendEmail(e) {
+  e.preventDefault();
+
+  const name = document.querySelector('.contact-form input[placeholder="Enter your name"]').value;
+  const email = document.querySelector('.contact-form input[type="email"]').value;
+  const game = document.querySelector('.contact-form input[placeholder="Game title"]').value;
+  const message = document.querySelector('.contact-form textarea').value;
+
+  const subject = `Game Inquiry: ${game}`;
+  const body =
+`Name: ${name}
+Email: ${email}
+Game Name: ${game}
+
+Message:
+${message}`;
+
+  const gmailURL =
+    "https://mail.google.com/mail/?view=cm&fs=1" +
+    "&to=" + encodeURIComponent("bevelcreatives@gmail.com") +
+    "&su=" + encodeURIComponent(subject) +
+    "&body=" + encodeURIComponent(body);
+
+  window.open(gmailURL, "_blank");
+}
+</script>
+
+<body class="loading">
+
+<div id="loader">
+  <div class="loader-content">
+    <div class="loader-logo-container">
+      <div class="logo-ring"></div>
+      <img src="BevelCreatives_transparent.png" alt="Bevel Logo" class="loader-logo-img">
+    </div>
+
+    <div id="load-animation">
+      <div>S</div><div>E</div><div>V</div><div>I</div><div>T</div><div>A</div><div>E</div><div>R</div><div>C</div>
+      <div style="opacity: 0;"> </div> 
+      <div>L</div><div>E</div><div>V</div><div>E</div><div>B</div>
+    </div>
+  </div>
+</div>
+
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="display:none;">
+  <defs>
+    <filter id="goo">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
+      <feBlend in="SourceGraphic" in2="goo" />
+    </filter>
+  </defs>
+</svg>
+
+  <div class="plasma-bg"></div>
+  <canvas id="hex-canvas"></canvas> <div class="noise-overlay"></div>
+
+  <header class="navbar glass">
+    <div class="logo">
+      <img src="BevelCreatives_transparent.png" alt="Bevel Creatives Logo" class="header-logo">
+      Bevel<span>Creatives</span>
+    </div>
+<nav>
+  <a href="index.html#home">Home</a>
+  <a href="index.html#about">About</a>
+  <a href="index.html#services">Services</a>
+  <a href="index.html#team">Team</a> 
+  <a href="index.html#wins">Results</a>
+    <a href="blog.html">Blogs</a> 
+  <a href="index.html#contact">Contact</a>
+</nav>
+  </header>
+
+  <section id="home" class="hero">
+    <div class="hero-content">
+      <text style="font-size: 100px;"><b>YOUR GAME DIES.</b></text><br>
+      <h1 class="revive-text"><span>WE REVIVE THEM.</span></h1>
+      <p>
+        Your downfall begins, our work begins.<br> 
+        Losing players? Stagnant revenue? We make sure your game not only recovers, but THRIVES!
+      </p>
+
+      <div class="engine-strip">
+        <div class="engine-logos">
+          <img src="Roblox_Logo_2022-removebg-preview.png" alt="Roblox">
+          <img src="unity.png" alt="Unity">
+          <img src="unreal.svg" alt="Unreal Engine">
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <section id="about" class="section glass">
+    <h2><center>About Us</center></h2>
+    <p>
+      <center>We are a Game Development & Recovery Studio from Nepal, specialized in rejuvenating struggling games of passionate developers. Founded by young and passionate game development freelancers, our expert team dives deep into your game's mechanics, player behavior, and monetization strategies to determine and execute the steps needed to turn things around.</center>
+      <br><center>No upfront, no fees: Only a share of the growth we create.</center>
+      <center><B>If we reach out, it's because your game has unrealized potential, ready to be revived.</B></center>
+    </p>
+  </section>
+
+  <section id="services" class="section">
+    <h2 style="text-align: center; margin-bottom: 50px;">What We Upgrade</h2>
+    <div class="service-grid-2x2">
+      <div class="glass service-card">
+        <div class="card-bg" style="background-image: url('retention.png');"></div>
+        <div class="card-content">
+          <h3>Player Retention</h3>
+          <p>Session length, addictiveness, and dopamine pacing to keep players coming back.</p>
+        </div>
+      </div>
+      <div class="glass service-card">
+        <div class="card-bg" style="background-image: url('monetization.png');"></div>
+        <div class="card-content">
+          <h3>Monetization Balance</h3>
+          <p>Optimizing revenue streams without sacrificing player trust or game integrity.</p>
+        </div>
+      </div>
+      <div class="glass service-card">
+        <div class="card-bg" style="background-image: url('analytics.webp');"></div>
+        <div class="card-content">
+          <h3>Live Analytics</h3>
+          <p>Deep dives into daily metrics, projections, and complex behavioral funnels.</p>
+        </div>
+      </div>
+      <div class="glass service-card">
+        <div class="card-bg" style="background-image: url('gameplay.avif');"></div>
+        <div class="card-content">
+          <h3>Core Gameplay Loops</h3>
+          <p>Refining the moment-to-moment experience that defines your game's feel.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="team" class="section">
+  <h2 style="text-align: center;">Meet Our Team</h2>
+  
+  <div class="team-execs">
+    <div class="glass team-card featured">
+      <div class="member-image"><img src="1765962601904.png" alt="Bibidh Gautam"></div>
+      <div class="member-info">
+        <h4>Bibidh Gautam</h4>
+        <p>Chief Executive Officer (CEO)</p>
+      </div>
+    </div>
+
+    <div class="glass team-card featured">
+      <div class="member-image"><img src="kaustuv.jpeg" alt="Kaustuv Kumar Batajoo"></div>
+      <div class="member-info">
+        <h4>Kaustuv Kumar Batajoo</h4>
+        <p>Managing Director (MD)</p>
+      </div>
+    </div>
+  </div>
+
+<div class="team-grid">
+  <!-- ROW MEMBERS -->
+
+  <div class="glass team-card">
+    <div class="member-image"><img src="Chirag.jpg" alt="Chirag Sapkota"></div>
+    <div class="member-info">
+      <h4>Chirag</h4>
+      <p>Administrator</p>
+      <span class="member-desc">Manages information and game version control.</span>
+    </div>
+  </div>
+
+  <div class="glass team-card">
+    <div class="member-image"><img src="Himanshu.jpg" alt="Himanshu Rawal"></div>
+    <div class="member-info">
+      <h4>Himanshu Rawal</h4>
+      <p>Tech Lead</p>
+      <span class="member-desc">Leads game systems, performance, and scalability.</span>
+    </div>
+  </div>
+
+  <div class="glass team-card">
+    <div class="member-image"><img src="Siddid.jpg" alt="Siddid"></div>
+    <div class="member-info">
+      <h4>Siddid</h4>
+      <p>QA Lead</p>
+      <span class="member-desc">Ensures game balance and player experience quality.</span>
+    </div>
+  </div>
+
+  <div class="glass team-card">
+    <div class="member-image"><img src="default.jpg" alt="Deepak"></div>
+    <div class="member-info">
+      <h4>Shreemad</h4>
+      <p>Systems Head</p>
+      <span class="member-desc">Develops mechanics and systems for game upliftment.</span>
+    </div>
+  </div>
+
+  <div class="glass team-card">
+    <div class="member-image"><img src="default.jpg" alt="Shreemad"></div>
+    <div class="member-info">
+      <h4>Deepak</h4>
+      <p>Programmer</p>
+      <span class="member-desc">Codes the designed systems and functions.</span>
+    </div>
+  </div>
+
+  <div class="glass team-card">
+    <div class="member-image"><img src="default.jpg" alt="Dipesh"></div>
+    <div class="member-info">
+      <h4>Dipesh Shah</h4>
+      <p>QA Tester</p>
+      <span class="member-desc">Checks for bugs and potential improvements.</span>
+    </div>
+  </div>
+
+  <div class="glass team-card">
+    <div class="member-image"><img src="default.jpg" alt="Dipesh"></div>
+    <div class="member-info">
+      <h4>Samreen Khadka</h4>
+      <p>QA Tester</p>
+      <span class="member-desc">Checks for bugs and potential improvements.</span>
+    </div>
+  </div>
+
+  <div class="glass team-card">
+    <div class="member-image"><img src="default.jpg" alt="Dipesh"></div>
+    <div class="member-info">
+      <h4>Aayusha KC</h4>
+      <p>QA Tester</p>
+      <span class="member-desc">Checks for bugs and potential improvements.</span>
+    </div>
+  </div>
+
+</div>
+
+</section>
+
+  <section id="wins" class="wins-section">
+    <h2>Results</h2>
+    <div class="wins-grid">
+      <div class="glass win-card">
+        <h3>+412% Retention</h3>
+        <p>Average session time increased from ~5 minutes to over 20 minutes!</p>
+      </div>
+      <div class="glass win-card">
+        <h3>+294% Revenue</h3>
+        <p>Average growth in revenue per game has increased by almost 3x on average.</p>
+      </div>
+      <div class="glass win-card highlight">
+        <h3>+18% Positive Review</h3>
+        <p>Average improvement in Like-To-Dislike ratio per game.</p>
+      </div>
+    </div>
+  </section>
+
+<section id="contact" class="section">
+  <h2 style="text-align:center;">Get In <span style="color:cyan;">Touch</span></h2>
+  <p style="text-align:center; color:#aaa; margin-bottom:60px;">
+    Ready to transform your indie game? Let’s talk.
+  </p>
+
+  <div class="contact-grid">
+    <!-- FORM -->
+<form class="glass contact-form" onsubmit="sendEmail(event)">
+      <label>Your Name</label>
+      <input type="text" placeholder="Enter your name">
+
+      <label>Email Address</label>
+      <input type="email" placeholder="Enter your email">
+
+      <label>Your Game Name</label>
+      <input type="text" placeholder="Game title">
+
+      <label>Tell Us About Your Game</label>
+      <textarea rows="5" placeholder="Briefly describe your game..."></textarea>
+
+      <button type="submit">Send Message ✈</button>
+    </form>
+
+    <!-- INFO -->
+    <div class="contact-info">
+      <div class="glass info-card">
+        <h4>Email</h4>
+        <p>bevelcreatives@gmail.com</p>
+      </div>
+
+      <div class="glass info-card">
+        <h4>Phone</h4>
+        <p>+977 9849268982</p>
+      </div>
+
+      <div class="glass info-card">
+        <h4>Location</h4>
+        <p>Kathmandu, Nepal</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">© 2025 Bevel Creatives Pvt. Ltd. All rights reserved.</div>
+</section>
+  
+<script>
+  // LOADER SCRIPT
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+  window.scrollTo(0, 0);
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const loader = document.getElementById('loader');
+    const body = document.body;
+    
+    setTimeout(() => {
+      if (loader) {
+        loader.classList.add('loader-hidden');
+        body.classList.remove('loading');
+        setTimeout(() => {
+          loader.style.display = 'none';
+        }, 800);
+      }
+    }, 2500);
+  });
+
+  // BEEHIVE INTERACTIVE SCRIPT
+  const canvas = document.getElementById('hex-canvas');
+  const ctx = canvas.getContext('2d');
+  let width, height, rows, cols;
+  const hexRadius = 30;
+  const mouse = { x: -1000, y: -1000 };
+
+  function init() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    cols = Math.ceil(width / (hexRadius * 1.5)) + 1;
+    rows = Math.ceil(height / (hexRadius * Math.sqrt(3))) + 1;
+  }
+
+  window.addEventListener('resize', init);
+  window.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+
+  function drawHexagon(x, y, radius, opacity) {
+    ctx.beginPath();
+    ctx.strokeStyle = `rgba(0, 255, 255, ${opacity})`;
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 6; i++) {
+      ctx.lineTo(x + radius * Math.cos(i * Math.PI / 3), y + radius * Math.sin(i * Math.PI / 3));
+    }
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        let x = c * hexRadius * 1.5;
+        let y = r * hexRadius * Math.sqrt(3);
+        if (c % 2 === 1) y += (hexRadius * Math.sqrt(3)) / 2;
+
+        const dist = Math.hypot(x - mouse.x, y - mouse.y);
+        let opacity = 0.05; // Default dim glow
+        let sizeMod = 0;
+
+        if (dist < 150) {
+          opacity = 0.4 - (dist / 150) * 0.35;
+          sizeMod = (1 - dist / 150) * 3;
+        }
+
+        drawHexagon(x, y, hexRadius + sizeMod, opacity);
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+
+  init();
+  animate();
+</script>
+
+</body>
+</html>
