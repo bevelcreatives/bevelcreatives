@@ -11,26 +11,27 @@
   <canvas id="hex-canvas"></canvas>
   <div class="noise-overlay"></div>
 
-  <header class="navbar glass">
+    <header class="navbar glass">
     <div class="logo">
       <img src="BevelCreatives_transparent.png" alt="Bevel Logo" class="header-logo">
       Bevel<span>Creatives</span>
-    </div><nav>
+    </div>
+
+    <nav>
       <a href="index.html#home">Home</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#services">Services</a>
+      <a href="index.html#team">Team</a>
+      <a href="index.html#wins">Results</a>
       <a href="blog.html">Blogs</a>
       <a href="index.html#contact">Contact</a>
     </nav>
-    <button class="hamburger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+
+    <button class="hamburger" type="button" aria-label="Open menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
-
-    <div id="mobile-menu" class="mobile-menu glass" hidden>
-      <a href="index.html#home">Home</a>
-      <a href="blog.html">Blogs</a>
-      <a href="index.html#contact">Contact</a>
-    </div>
-
   </header>
+
 
   <main class="article-reader-container">
     <div class="glass article-main-card">
@@ -119,68 +120,49 @@
   </script>
 
 
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.querySelector(".hamburger");
-  const menu = document.getElementById("mobile-menu");
-  const desktopNav = document.querySelector(".navbar nav");
+  const navbar = document.querySelector(".navbar");
+  const hamburger = document.querySelector(".hamburger");
+  const navLinks = document.querySelectorAll(".navbar nav a");
 
-  if (!btn || !menu) return;
+  if (!navbar || !hamburger) return;
 
-  const closeMenu = () => {
-    btn.classList.remove("is-open");
-    btn.setAttribute("aria-expanded", "false");
-    menu.hidden = true;
-    document.body.classList.remove("menu-open");
+  const closeNav = () => {
+    navbar.classList.remove("nav-open");
+    hamburger.classList.remove("is-open");
+    hamburger.setAttribute("aria-expanded", "false");
   };
 
-  const openMenu = () => {
-    btn.classList.add("is-open");
-    btn.setAttribute("aria-expanded", "true");
-    menu.hidden = false;
-    document.body.classList.add("menu-open");
+  const toggleNav = () => {
+    const open = navbar.classList.toggle("nav-open");
+    hamburger.classList.toggle("is-open", open);
+    hamburger.setAttribute("aria-expanded", open ? "true" : "false");
   };
 
-  const toggleMenu = () => {
-    const isOpen = btn.classList.contains("is-open");
-    if (isOpen) closeMenu();
-    else openMenu();
-  };
-
-  btn.addEventListener("click", (e) => {
+  hamburger.addEventListener("click", (e) => {
     e.stopPropagation();
-    toggleMenu();
+    toggleNav();
   });
 
-  // Close when clicking a link
-  menu.addEventListener("click", (e) => {
-    const a = e.target.closest("a");
-    if (a) closeMenu();
-  });
+  navLinks.forEach(a => a.addEventListener("click", closeNav));
 
-  // Close on outside click
   document.addEventListener("click", (e) => {
-    if (menu.hidden) return;
-    if (e.target.closest("#mobile-menu")) return;
-    if (e.target.closest(".hamburger")) return;
-    closeMenu();
+    if (!navbar.classList.contains("nav-open")) return;
+    if (e.target.closest(".navbar")) return;
+    closeNav();
   });
 
-  // Close on Escape
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeMenu();
+    if (e.key === "Escape") closeNav();
   });
 
-  // Safety: if resized to desktop, close
   window.addEventListener("resize", () => {
-    if (window.innerWidth > 768) closeMenu();
+    if (window.innerWidth > 768) closeNav();
   });
-
-  // If desktop nav is visible, ensure menu stays closed
-  if (desktopNav && window.getComputedStyle(desktopNav).display !== "none") {
-    closeMenu();
-  }
 });
 </script>
+
 </body>
 </html>

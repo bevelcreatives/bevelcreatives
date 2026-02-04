@@ -1216,3 +1216,167 @@ body.menu-open{
     margin-right: auto;
   }
 }
+
+/* =========================================================
+   MOBILE EXPANDING TOPBAR – 2 ROW GRID (LIKE YOUR 2nd IMAGE)
+   ========================================================= */
+@media (max-width: 768px){
+
+  /* Turn navbar into 2-row grid */
+  .navbar{
+    /* fit screen with equal side spacing */
+    width: calc(100% - 20px) !important;
+    max-width: none !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    top: 10px !important;
+
+    /* grid layout */
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    grid-template-rows: 60px 1fr !important;
+    grid-template-areas:
+      "logo burger"
+      "nav  nav" !important;
+
+    align-items: center !important;
+    justify-items: stretch !important;
+
+    padding: 0 14px !important;   /* keep inner breathing space */
+    overflow: hidden !important;
+
+    height: 60px !important;      /* closed height */
+    transition: height 260ms cubic-bezier(.2,.9,.2,1) !important;
+  }
+
+  /* expanded height */
+  .navbar.nav-open{
+    height: 340px !important;     /* enough for 7 buttons */
+  }
+
+  /* Kill previous absolute pinning */
+  .navbar .logo,
+  .navbar .hamburger,
+  .navbar nav{
+    position: static !important;
+  }
+
+  /* Place logo + hamburger in first row */
+  .navbar .logo{
+    grid-area: logo !important;
+    justify-self: start !important;
+    align-self: center !important;
+    margin: 0 !important;
+  }
+
+  .navbar .hamburger{
+    grid-area: burger !important;
+    justify-self: end !important;
+    align-self: center !important;
+
+    width: 38px !important;
+    height: 36px !important;
+    min-width: 38px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Place nav in second row */
+  .navbar nav{
+    grid-area: nav !important;
+
+    /* IMPORTANT: override any display:none */
+    display: grid !important;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+
+    width: 100% !important;
+
+    /* spacing below the brand row */
+    padding: 12px 0 14px !important;
+
+    /* start from top of the nav area */
+    align-content: start !important;
+
+    /* hidden when closed */
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .navbar.nav-open nav{
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  /* Button styling: full width pills (no right-side tiny boxes) */
+  .navbar nav a{
+    margin: 0 !important;                 /* kill desktop margin-left */
+    width: 100% !important;
+
+    padding: 14px 12px !important;
+    border-radius: 16px !important;
+    text-align: center !important;
+
+    background: rgba(0,0,0,0.22) !important;
+    border: 1px solid rgba(255,255,255,0.10) !important;
+    color: rgba(255,255,255,0.92) !important;
+
+    font-weight: 700 !important;
+    text-decoration: none !important;
+    line-height: 1 !important;
+  }
+
+  /* Make the last button (Contact) span full width */
+  .navbar nav a:last-child{
+    grid-column: 1 / -1 !important;
+  }
+
+  /* We are not using the old dropdown anymore */
+  #mobile-menu{ display: none !important; }
+}
+
+/* =====================================================
+   HAMBURGER ICON – clean 3-bar hamburger (and nice X)
+   ===================================================== */
+.hamburger{
+  display: none;                 /* shown only on mobile by your media query */
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.22);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+
+  /* center the bars */
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 7px;                      /* spacing between bars */
+  padding: 0;
+  line-height: 0;
+}
+
+/* the 3 bars */
+.hamburger span{
+  display: block;
+  width: 20px;                   /* bar length */
+  height: 3px;                   /* bar thickness */
+  border-radius: 999px;
+  background: rgba(255,255,255,0.92);
+  transition: transform 200ms ease, opacity 200ms ease;
+  transform-origin: center;
+}
+
+/* OPEN state -> perfect X */
+.hamburger.is-open span:nth-child(1){
+  transform: translateY(10px) rotate(45deg);
+}
+.hamburger.is-open span:nth-child(2){
+  opacity: 0;
+}
+.hamburger.is-open span:nth-child(3){
+  transform: translateY(-10px) rotate(-45deg);
+}
+
