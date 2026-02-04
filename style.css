@@ -1201,3 +1201,18 @@ body.menu-open{
     0 0 10px rgba(255, 59, 59, 0.4),
     0 0 22px rgba(255, 59, 59, 0.25);
 }
+
+@media (max-width: 768px){
+
+  .wins-grid{
+    grid-template-columns: 1fr !important; /* single column */
+    justify-items: center !important;      /* center cards */
+  }
+
+  .win-card{
+    width: 100%;
+    max-width: 360px;  /* keeps cards visually centered */
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
