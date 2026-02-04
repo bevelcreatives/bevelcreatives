@@ -1169,6 +1169,11 @@ body.menu-open{
   object-fit: contain;
 }
 
+.contact-icon-btn img[src*="linkedin"]{
+  width: 30px;
+  height: 30px;
+}
+
 /* Hover */
 #contact .contact-icon-btn:hover{
   transform: translateY(-2px);
