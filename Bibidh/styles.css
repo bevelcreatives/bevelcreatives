@@ -1,0 +1,986 @@
+:root{
+  --bg:#0b0b0f;
+  --bg2:#07070a;
+  --card:#111118;
+  --stroke:rgba(255,255,255,.10);
+  --stroke2:rgba(255,255,255,.16);
+  --text:rgba(255,255,255,.92);
+  --muted:rgba(255,255,255,.66);
+  --faint:rgba(255,255,255,.40);
+
+  --a1:#ff3bd4;
+  --a2:#b6ff3b;
+  --a3:#45d6ff;
+  --a4:#ffd23b;
+
+  --shadow: 0 20px 80px rgba(0,0,0,.55);
+  --r: 22px;
+
+  --max: 1560px;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 800px at 20% 10%, rgba(69,214,255,.08), transparent 55%),
+    radial-gradient(1000px 700px at 85% 15%, rgba(255,59,212,.08), transparent 55%),
+    radial-gradient(900px 700px at 60% 90%, rgba(182,255,59,.06), transparent 55%),
+    linear-gradient(180deg, var(--bg), var(--bg2));
+  color:var(--text);
+  font-family:"Space Grotesk", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  overflow-x:hidden;
+}
+
+a{color:inherit; text-decoration:none}
+button, input, textarea{font:inherit}
+
+/* Grain */
+.grain{
+  pointer-events:none;
+  position:fixed; inset:0;
+  opacity:.06;
+  mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+  background-size:260px 260px;
+}
+
+/* Cursor aura */
+.aura{
+  position:fixed;
+  width: 520px; height: 520px;
+  border-radius:999px;
+  left:-999px; top:-999px;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,59,212,.18), transparent 55%),
+    radial-gradient(circle at 70% 40%, rgba(69,214,255,.14), transparent 55%),
+    radial-gradient(circle at 45% 75%, rgba(182,255,59,.12), transparent 55%);
+  filter: blur(14px);
+  transform: translate3d(0,0,0);
+  pointer-events:none;
+  opacity:.85;
+  transition: opacity .25s ease;
+  z-index:0;
+}
+
+/* Helpers */
+.wrap{width:min(var(--max), calc(100% - 56px)); margin:0 auto; position:relative; z-index:2;}
+.section{padding:84px 0;}
+.section.tight{padding:56px 0;}
+.pill{
+  display:inline-flex; align-items:center; gap:10px;
+  padding:10px 14px;
+  border:1px solid var(--stroke);
+  border-radius:999px;
+  background:rgba(255,255,255,.03);
+  backdrop-filter: blur(10px);
+}
+.dot{
+  width:8px;height:8px;border-radius:99px;
+  background:linear-gradient(90deg,var(--a3),var(--a1));
+  box-shadow:0 0 0 6px rgba(69,214,255,.08);
+}
+
+/* Nav */
+.nav{
+  position:sticky; top:0;
+  z-index:50;
+  backdrop-filter: blur(12px);
+  background: rgba(11,11,15,.58);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.nav-inner{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 0;
+  gap:12px;
+}
+.brand{
+  display:flex; align-items:center; gap:12px;
+  font-weight:600;
+  letter-spacing:.3px;
+}
+.brand-badge {
+  width: 45px;
+  height: 45px;
+  border-radius: 999px;
+  /* Replace 'your-logo.png' with your actual image path */
+  background-image: url('logo.png'); 
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  flex-shrink: 0;
+  /* Optional: keeps a small border to help it stand out */
+  border: 1px solid rgba(255, 255, 255, 0.1); 
+}
+.nav-links{
+  display:flex; align-items:center; gap:18px;
+  color:var(--muted);
+  font-size:14px;
+}
+.nav-links a{
+  position:relative;
+  padding:8px 10px;
+  border-radius:999px;
+  transition: background .2s ease, color .2s ease, transform .2s ease;
+}
+.nav-links a:hover{
+  background:rgba(255,255,255,.05);
+  color:var(--text);
+  transform: translateY(-1px);
+}
+.nav-cta{
+  display:flex; align-items:center; gap:10px;
+}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid var(--stroke);
+  background: rgba(255,255,255,.03);
+  color:var(--text);
+  cursor:pointer;
+  transition: transform .18s ease, background .18s ease, border-color .18s ease;
+  user-select:none;
+  white-space:nowrap;
+}
+.btn:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,.06);
+  border-color: var(--stroke2);
+}
+.btn.primary{
+  border-color: rgba(69,214,255,.35);
+  background:
+    radial-gradient(circle at 30% 20%, rgba(69,214,255,.20), transparent 55%),
+    radial-gradient(circle at 70% 80%, rgba(255,59,212,.18), transparent 60%),
+    rgba(255,255,255,.03);
+}
+.btn.primary:hover{ border-color: rgba(255,59,212,.35); }
+.hamburger{
+  display:none;
+  width:44px;height:40px;
+  border-radius:999px;
+  border:1px solid var(--stroke);
+  background:rgba(255,255,255,.03);
+  color:var(--text);
+}
+
+/* Hero */
+.hero{ padding:78px 0 28px; }
+.hero-grid{
+  display:grid;
+  grid-template-columns: minmax(320px, 0.95fr) minmax(420px, 1.20fr) minmax(360px, 0.95fr);
+  gap:28px;
+  align-items:stretch;
+}
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centers elements horizontally */
+  justify-content: center; /* Centers elements vertically within the container */
+  text-align: center; /* Ensures text inside elements is centered */
+  max-width: 800px; /* Prevents text lines from getting too long/unreadable */
+  margin: 0 auto; /* Centers the entire container box on the page */
+}
+
+/* Style for the "Uplifting struggling indie games..." part */
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 14px;
+  justify-content: center; /* Add this line to center the text and icon */
+}
+
+/* Style for the "I’m a game developer..." part */
+.lead {
+  font-size: 18px;
+  color: var(--muted);
+  line-height: 1.6;
+  text-align: center; /* Add this line to center the text */
+}
+.h1 {
+  margin: 16px 0 14px;
+  font-family: "Bebas Neue", system-ui, sans-serif;
+  font-size: clamp(54px, 7.2vw, 104px);
+  line-height: .92;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  text-align: center; /* Add this line to center the text */
+}
+
+.h1 .stroke{
+  color:transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,.45);
+  text-stroke: 1px rgba(255,255,255,.45);
+}
+
+/* RGB letter wave + individual pulse for EXPENSIVE. */
+.rgb-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.rgb-word .rgb-letter {
+  display: inline-block;
+  will-change: transform, filter, color, text-shadow;
+  animation:
+    rgbWave 2.2s linear infinite,
+    letterPulse 1.15s ease-in-out infinite;
+  /* each letter gets its own delay set in JS */
+  transform-origin: 50% 75%;
+}
+
+@keyframes rgbWave {
+  0% {
+    color: rgb(255, 60, 60);         /* red */
+    text-shadow:
+      0 0 10px rgba(255, 60, 60, .55),
+      0 0 22px rgba(255, 60, 60, .25);
+    filter: saturate(1.25);
+  }
+  33% {
+    color: rgb(60, 255, 120);        /* green */
+    text-shadow:
+      0 0 10px rgba(60, 255, 120, .55),
+      0 0 22px rgba(60, 255, 120, .25);
+  }
+  66% {
+    color: rgb(80, 160, 255);        /* blue */
+    text-shadow:
+      0 0 10px rgba(80, 160, 255, .55),
+      0 0 22px rgba(80, 160, 255, .25);
+  }
+  100% {
+    color: rgb(255, 60, 60);
+    text-shadow:
+      0 0 10px rgba(255, 60, 60, .55),
+      0 0 22px rgba(255, 60, 60, .25);
+    filter: saturate(1.25);
+  }
+}
+
+@keyframes letterPulse {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
+  50%      { transform: translateY(-3px) scale(1.04); opacity: .95; }
+}
+
+/* Respect reduced-motion users */
+@media (prefers-reduced-motion: reduce) {
+  .rgb-word .rgb-letter { animation: none; }
+}
+
+.lead{
+  max-width: 64ch;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.7;
+  margin: 0 0 18px;
+}
+.hero-actions{display:flex; gap:12px; flex-wrap:wrap; margin: 18px 0 0;}
+.mini{ color:var(--faint); font-size:13px; margin-top:14px; }
+
+.hero-card{
+  border:1px solid var(--stroke);
+  border-radius: var(--r);
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255,210,59,.10), transparent 50%),
+    radial-gradient(circle at 80% 55%, rgba(69,214,255,.10), transparent 55%),
+    rgba(255,255,255,.02);
+  box-shadow: var(--shadow);
+  overflow:hidden;
+  position:relative;
+}
+.hero-card .top{
+  padding:18px 18px 12px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.tag{
+  font-size:12px;
+  color:var(--muted);
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.03);
+  padding:6px 10px;
+  border-radius:999px;
+  white-space:nowrap;
+}
+.hero-card .body{ padding:16px 18px 18px; }
+.stat-row{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+}
+.stat{
+  border:1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.02);
+  border-radius: 16px;
+  padding:12px 12px;
+  min-height: 74px;
+}
+.stat b{ display:block; font-size:22px; letter-spacing:.2px; margin-bottom:2px; }
+.stat span{ color:var(--muted); font-size:13px; line-height:1.3; }
+.hero-card .footer{ padding:14px 18px 18px; display:flex; gap:10px; flex-wrap:wrap; }
+.chip{
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.02);
+  padding:8px 10px;
+  border-radius:999px;
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* Marquee */
+.marquee{
+  border-top:1px solid rgba(255,255,255,.06);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.015);
+  overflow:hidden;
+}
+.marquee .track{
+  display:flex;
+  gap:26px;
+  padding:14px 0;
+  width:max-content;
+  animation: scroll 26s linear infinite;
+}
+.marquee .word{
+  display:flex; align-items:center; gap:10px;
+  font-family:"Bebas Neue", system-ui, sans-serif;
+  font-size: 26px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.75);
+  white-space:nowrap;
+}
+.spark{
+  width:10px;height:10px;border-radius:3px;
+  background: linear-gradient(135deg, var(--a4), var(--a1));
+  box-shadow: 0 0 0 7px rgba(255,210,59,.08);
+  transform: rotate(18deg);
+}
+@keyframes scroll{
+  from{ transform: translateX(0); }
+  to{ transform: translateX(-50%); }
+}
+
+/* Section headings */
+.head{
+  display:flex; align-items:flex-end; justify-content:space-between;
+  gap:18px;
+  margin-bottom:18px;
+}
+.label{
+  font-family:"Bebas Neue", system-ui, sans-serif;
+  font-size: 22px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.78);
+  display:flex; align-items:center; gap:10px;
+}
+.h2{
+  margin: 0;
+  font-family:"Bebas Neue", system-ui, sans-serif;
+  font-size: clamp(38px, 4.6vw, 62px);
+  line-height: .95;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+}
+.sub{
+  color: var(--muted);
+  max-width: 1000ch;
+  font-size: 15px;
+  line-height: 1.7;
+  margin-top: 10px;
+}
+
+/* Cards grid */
+.grid{
+  display:grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap:14px;
+}
+.card{
+  border:1px solid var(--stroke);
+  border-radius: var(--r);
+  background: rgba(255,255,255,.02);
+  overflow:hidden;
+  position:relative;
+  box-shadow: 0 18px 60px rgba(0,0,0,.45);
+  transform: translateY(0);
+  transition: transform .2s ease, border-color .2s ease, background .2s ease;
+  will-change: transform;
+}
+.card:hover{
+  transform: translateY(-4px);
+  border-color: rgba(255,255,255,.20);
+  background: rgba(255,255,255,.03);
+}
+.card .pad{padding:16px;}
+.card .title{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  margin:0 0 6px;
+}
+.card h3{ margin:0; font-size:18px; letter-spacing:.2px; }
+.meta{ color: var(--muted); font-size:13px; line-height:1.55; margin: 0; }
+.thumb{
+  height: 160px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-color: rgba(255,255,255,.02);
+  position:relative;
+  overflow:hidden;
+}
+
+/* Subtle readability overlay (keeps text legible over photos) */
+.thumb::before{
+  content:"";
+  position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.68));
+}
+
+/* Individual card images (replace filenames with your own assets) */
+.thumb-hacker{ background-image: url('ht.webp'); }
+.thumb-flashpoint{ background-image: url('flashpoint.webp'); }
+.thumb-dbr{ background-image: url('dbr.webp'); }
+.thumb-kidnapper{ background-image: url('kidnapper.webp'); }
+.thumb-ctw{ background-image: url('CTW.webp'); }
+
+.pillrow{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+.tiny{
+  font-size:12px;
+  color: rgba(255,255,255,.72);
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.02);
+  padding:6px 10px;
+  border-radius: 999px;
+}
+
+/* Column spans */
+.span-4{grid-column: span 4;}
+.span-6{grid-column: span 6;}
+.span-12{grid-column: span 12;}
+
+/* Steps */
+.steps{
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap:12px;
+  margin-top: 14px;
+}
+.step{
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.02);
+  border-radius: 18px;
+  padding:14px 14px;
+  min-height: 130px;
+}
+.step b{
+  display:block;
+  font-family:"Bebas Neue", system-ui, sans-serif;
+  font-size: 26px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  margin-bottom:6px;
+}
+.step p{margin:0; color:var(--muted); font-size:13px; line-height:1.6;}
+
+/* Testimonials */
+.quote{
+  border:1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(circle at 15% 20%, rgba(182,255,59,.10), transparent 55%),
+    radial-gradient(circle at 85% 75%, rgba(69,214,255,.10), transparent 55%),
+    rgba(255,255,255,.02);
+  border-radius: var(--r);
+  padding:18px;
+  min-height: 160px;
+}
+.quote p{
+  margin:0;
+  font-size:15px;
+  line-height:1.8;
+  color: rgba(255,255,255,.82);
+}
+.who{
+  margin-top:12px;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* Contact */
+.contact{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:14px;
+  align-items:stretch;
+}
+.form{
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.02);
+  border-radius: var(--r);
+  padding:16px;
+}
+.field{display:flex; flex-direction:column; gap:8px; margin-bottom:12px;}
+.field label{font-size:13px; color:var(--muted);}
+.field input, .field textarea{
+  background: rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius: 14px;
+  padding:12px 12px;
+  color:var(--text);
+  outline:none;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.field input:focus, .field textarea:focus{
+  border-color: rgba(69,214,255,.40);
+  box-shadow: 0 0 0 6px rgba(69,214,255,.10);
+  background: rgba(255,255,255,.04);
+}
+textarea{min-height:120px; resize:vertical;}
+.form-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;}
+.note{ color: var(--faint); font-size: 12.5px; line-height: 1.6; margin-top: 10px; }
+
+/* Footer */
+.footer{
+  padding:36px 0 56px;
+  border-top:1px solid rgba(255,255,255,.06);
+  color:var(--muted);
+  font-size: 13px;
+}
+.footer .row{
+  display:flex; flex-wrap:wrap;
+  align-items:center; justify-content:space-between;
+  gap:12px;
+}
+.social{display:flex; gap:10px; flex-wrap:wrap;}
+.social a{
+  padding:8px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.02);
+}
+.social a:hover{
+  border-color: rgba(255,255,255,.22);
+  background: rgba(255,255,255,.03);
+}
+
+/* Reveal */
+.reveal{
+  opacity:0;
+  transform: translateY(16px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+.reveal.on{ opacity:1; transform: translateY(0); }
+
+/* Mobile menu */
+.mobile-panel{
+  display:none;
+  border-top:1px solid rgba(255,255,255,.06);
+  padding:10px 0 14px;
+}
+.mobile-panel a{
+  display:block;
+  padding:10px 10px;
+  color: var(--muted);
+  border-radius: 12px;
+}
+.mobile-panel a:hover{background: rgba(255,255,255,.04); color: var(--text);}
+
+/* Responsive */
+@media (max-width: 980px){
+  .hero-grid{grid-template-columns: 1fr;}
+  .hero-photo{max-height: 520px;}
+  .photo-frame{min-height: 420px;}
+
+  .steps{grid-template-columns: 1fr 1fr;}
+  .contact{grid-template-columns: 1fr;}
+  .span-4{grid-column: span 6;}
+  .span-6{grid-column: span 12;}
+}
+@media (max-width: 720px){
+  .nav-links{display:none;}
+  .hamburger{display:inline-flex; align-items:center; justify-content:center;}
+  .span-4{grid-column: span 12;}
+  .steps{grid-template-columns: 1fr;}
+  .section{padding:64px 0;}
+  .hero{padding:58px 0 18px;}
+  .aura{width:420px;height:420px; opacity:.65;}
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  .marquee .track{animation:none}
+  .reveal{transition:none}
+  .btn, .card, .nav-links a{transition:none}
+}
+
+
+/* ===== Landing layout tweaks (photo-left like reference) ===== */
+.hero-grid{
+  grid-template-columns: 0.8fr 1.35fr 0.95fr;
+  align-items: start;
+}
+
+.hero-photo{
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.02);
+  border-radius: var(--r);
+  overflow:hidden;
+  box-shadow: 0 18px 60px rgba(0,0,0,.45);
+}
+
+.photo-frame{
+  position:relative;
+  width:100%;
+  aspect-ratio: 1 / 1;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(69,214,255,.14), transparent 55%),
+    radial-gradient(circle at 70% 80%, rgba(255,59,212,.12), transparent 55%),
+    rgba(255,255,255,.02);
+}
+
+.photo-frame img{
+  width:100%;
+  height:100%;
+  object-fit: contain;
+  display:block;
+  filter: contrast(1.02) saturate(1.02);
+  background: rgba(0,0,0,.25);
+
+}
+
+.photo-caption{
+  padding:16px 16px 18px;
+  border-top:1px solid rgba(255,255,255,.06);
+  text-align:center;
+}
+
+.cap-title{
+  font-size: 26px;
+  line-height: 1.05;
+  letter-spacing: .3px;
+  font-family:"Bebas Neue", system-ui, sans-serif;
+  text-transform: uppercase;
+}
+
+.cap-sub{
+  margin-top:6px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* Availability pill (red pulsing dot) */
+.availability{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.03);
+  color: rgba(255,255,255,.78);
+  font-size:12px;
+  white-space:nowrap;
+}
+
+.pulse{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background:#ff3b3b;
+  box-shadow: 0 0 0 0 rgba(255,59,59,.35);
+  animation: pulseDot 1.4s ease-in-out infinite;
+}
+
+@keyframes pulseDot{
+  0%   { box-shadow: 0 0 0 0 rgba(255,59,59,.38); }
+  70%  { box-shadow: 0 0 0 10px rgba(255,59,59,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,59,59,0); }
+}
+
+/* Green stats */
+.stat-green{
+  border-color: rgba(182,255,59,.22) !important;
+  background: rgba(182,255,59,.10) !important;
+}
+.stat-green b{ color: rgba(255,255,255,.92); }
+
+/* Footer icon button */
+.icon-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:40px;
+  height:40px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.02);
+}
+.icon-link:hover{
+  border-color: rgba(255,255,255,.22);
+  background: rgba(255,255,255,.03);
+}
+
+/* Responsive: stack nicely */
+@media (max-width: 980px){
+  .hero-grid{ grid-template-columns: 1fr; }
+  .photo-frame{ aspect-ratio: 16 / 10; }
+}
+
+/* --- CUSTOM RGB SCROLLBAR --- */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+  border-left: 1px solid var(--stroke);
+}
+
+::-webkit-scrollbar-thumb {
+  /* This creates the RGB gradient vibe */
+  background: linear-gradient(
+    180deg, 
+    #ff3c3c, 
+    #3cff78, 
+    #50a0ff, 
+    #ff3c3c
+  );
+  background-size: 100% 300%;
+  border-radius: 10px;
+  border: 2px solid var(--bg); /* creates a gap effect */
+  animation: scrollRGB 4s linear infinite;
+}
+
+/* Optional: Subtle animation for the scrollbar colors */
+@keyframes scrollRGB {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 0% 100%; }
+}
+
+/* --- SCROLLBAR IMAGE ATTACHMENT --- */
+/* Note: Since we can't easily put an image "inside" a scrollbar 
+   that stays at the bottom, we create a fixed element that sits 
+   in the scrollbar gutter at the bottom right of the screen. */
+.scrollbar-anchor {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 12px; /* Same as scrollbar width */
+  height: 12px; 
+  z-index: 100;
+  pointer-events: none;
+  background-image: url('your-image.png'); /* REPLACE WITH YOUR IMAGE */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: var(--bg); /* Matches track color */
+}
+
+/* --- CUSTOM RGB SCROLLBAR --- */
+::-webkit-scrollbar {
+  width: 14px; /* Slightly wider for the RGB effect */
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+  border-left: 1px solid var(--stroke);
+}
+
+::-webkit-scrollbar-thumb {
+  /* Matching the RGB colors from your 'ADDICTIVE!' animation */
+  background: linear-gradient(
+    180deg, 
+    rgb(255, 60, 60),   /* Red */
+    rgb(60, 255, 120),  /* Green */
+    rgb(80, 160, 255),  /* Blue */
+    rgb(255, 60, 60)    /* Red return */
+  );
+  background-size: 100% 400%;
+  border-radius: 20px;
+  border: 3px solid #0b0b0f; /* Adds a 'floating' look */
+  animation: scrollbarRGB 5s linear infinite;
+}
+
+@keyframes scrollbarRGB {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 0% 100%; }
+}
+
+/* --- SCROLLBAR IMAGE ANCHOR --- */
+/* This mimics an image "attached" to the bottom of the scroll track */
+.scroll-img-anchor {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 14px; /* Match scrollbar width */
+  height: 30px; /* Adjust based on your image height */
+  z-index: 9999;
+  pointer-events: none;
+  background-image: url('bibidh.png'); /* <--- PUT YOUR IMAGE LINK HERE */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  /* Optional: filter to make it pop */
+  filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));
+}
+
+/* --- RGB SCROLLBAR WITH FIXED BOTTOM IMAGE --- */
+::-webkit-scrollbar {
+  width: 16px; /* Slightly wider to accommodate the image */
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+  border-left: 1px solid var(--stroke);
+}
+
+::-webkit-scrollbar-thumb {
+  /* 1. The RGB Gradient Background */
+  /* 2. Your Hammer Image (placed at the bottom) */
+  background-image: 
+    url('your-hammer-image.png'), 
+    linear-gradient(
+      180deg, 
+      #ff3c3c, #3cff78, #50a0ff, #ff3c3c
+    );
+  
+  /* Image at bottom center, Gradient covers the rest */
+  background-position: bottom center, 0% 0%;
+  background-repeat: no-repeat, repeat;
+  background-size: 12px auto, 100% 400%; /* Adjust 12px to fit hammer width */
+  
+  border-radius: 20px;
+  border: 3px solid #0b0b0f;
+  
+  /* This animates the RGB part without moving the hammer */
+  animation: scrollbarRGB 5s linear infinite;
+}
+
+@keyframes scrollbarRGB {
+  0% { background-position: bottom center, 0% 0%; }
+  100% { background-position: bottom center, 0% 100%; }
+}
+
+/* We must apply the animation to the thumb differently for some browsers, 
+   but since webkit is restrictive, we use a transition-like background shift */
+::-webkit-scrollbar-thumb:vertical {
+  background-position: 0% 0%;
+  transition: background-position 0.5s;
+}
+
+/* To truly mimic the 'ADDICTIVE' pulse, we add a hover effect or 
+   keep the gradient long so it shifts as you scroll. */
+
+   /* =========================
+   Mobile-first fit fixes
+   (safe overrides)
+   ========================= */
+
+/* Use a single gutter variable so left/right spacing is always equal */
+:root{ --gutter: 28px; }
+.wrap{
+  width: min(var(--max), calc(100% - (var(--gutter) * 2)));
+}
+
+/* Prevent long strings from pushing layout sideways */
+*{ min-width: 0; }
+img, svg, video, canvas{ max-width:100%; height:auto; }
+
+/* Make 12-col grids behave nicely at all widths */
+.grid{ gap: 14px; }
+
+/* --- Tablet & down --- */
+@media (max-width: 980px){
+  :root{ --gutter: 22px; }
+
+  .head{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .head > a.btn{ align-self: flex-start; }
+
+  /* Cards: avoid cramped title row */
+  .card .title{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+/* --- Phone --- */
+@media (max-width: 720px){
+  :root{ --gutter: 16px; }
+
+  /* NAV: keep everything inside screen */
+  .nav-inner{
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .brand{
+    flex: 1 1 auto;
+  }
+  .brand .tag{ display:none; }  /* prevents wrap overflow */
+
+  .nav-cta{
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  /* Hide the extra CTA to avoid overflow; keep primary + hamburger */
+  #copyEmail{ display:none; }
+  .nav-cta .btn.primary{
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  /* HERO: ensure centered content stays centered */
+  .hero-copy{ max-width: 100%; }
+  .hero-actions{
+    justify-content: center;
+    width: 100%;
+  }
+
+  /* Photo/card sizing */
+  .photo-frame{
+    aspect-ratio: 4 / 3;
+  }
+
+  /* Stats grid inside hero-card: 1 column on small screens */
+  .stat-row{
+    grid-template-columns: 1fr;
+  }
+
+  /* Section padding slightly tighter */
+  .section{ padding: 56px 0; }
+  .hero{ padding: 52px 0 16px; }
+
+  /* Work/Services cards: ensure full width */
+  .span-4, .span-6, .span-12{ grid-column: span 12; }
+
+  /* Contact buttons: stack, full width */
+  .form-actions{
+    flex-direction: column;
+  }
+  .form-actions .btn{
+    width: 100%;
+  }
+
+  /* Marquee typography scale */
+  .marquee .word{ font-size: 20px; }
+}
+
+/* --- Small phones --- */
+@media (max-width: 420px){
+  :root{ --gutter: 12px; }
+  .h1{ letter-spacing: .4px; }
+  .btn{ padding: 10px 12px; }
+}

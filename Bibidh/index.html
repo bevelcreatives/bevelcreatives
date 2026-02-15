@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0b0f" />
+  <title>Bibidh Gautam</title>
+  <meta name="description" content="Game developer focused on game design, visuals, and uplifting struggling indie games at Bevel Creatives Pvt. Ltd." />
+
+  <!-- Fonts (free alternatives to the bold editorial vibe) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="aura" id="aura"></div>
+  <div class="grain"></div>
+
+  <!-- NAV -->
+  <header class="nav">
+    <div class="wrap">
+      <div class="nav-inner">
+        <a class="brand" href="#top" aria-label="Home">
+          <span class="brand-badge" aria-hidden="true"></span>
+          <span>Bibidh Gautam</span>
+          <span class="tag">Game Design • Visuals</span>
+        </a>
+
+        <nav class="nav-links" aria-label="Primary">
+          <a href="#about">About</a>
+          <a href="#work">Work</a>
+          <a href="#services">Services</a>
+          <a href="#process">Process</a>
+          <a href="#contact">Contact</a>
+        </nav>
+
+        <div class="nav-cta">
+          <a class="btn primary" href="#contact">Collaborate</a>
+          <button class="hamburger" id="hamburger" aria-label="Open menu">☰</button>
+        </div>
+      </div>
+
+      <div class="mobile-panel" id="mobilePanel" aria-label="Mobile menu">
+        <a href="#work">Work</a>
+        <a href="#services">Services</a>
+        <a href="#process">Process</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <main id="top" class="wrap hero">
+    <div class="hero-grid">
+      <!-- Left: Photo -->
+      <section class="hero-photo reveal" aria-label="Profile photo">
+        <div class="photo-frame">
+          <!-- Replace src with your own image path -->
+          <img src="bibidh.png" alt="Bibidh Gautam" />
+        </div>
+        <div class="photo-caption">
+          <div class="cap-title">Founder, CEO</div>
+          <div class="cap-sub">Bevel Creatives Pvt. Ltd.</div>
+        </div>
+      </section>
+
+      <!-- Middle: Copy -->
+      <div class="hero-copy reveal" style="transition-delay:.04s">
+        <div class="kicker">
+          <span class="dot" aria-hidden="true"></span>
+          <span>Uplifting struggling indie games @ <b>Bevel Creatives Pvt. Ltd.</b></span>
+        </div>
+
+        <h1 class="h1">
+          I DESIGN GAMES<br />
+          <span class="stroke">SUSPICIOUSLY</span><br />
+          <span class="rgb-word" id="rgbExpensive">ADDICTIVE!</span>
+        </h1>
+
+        <p class="lead">
+          I’m a game developer specializing in <b>game design</b> and <b>visual direction</b>, the parts that make players
+          say “one more round.” I currently help indie games recover: clearer loops, better progression, stronger visuals,
+          and a vibe that sells.
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn primary" href="#work">Explore Work</a>
+          <a class="btn" href="#services">What I Do</a>
+        </div>
+
+        <div class="mini">Available for: Design Direction • UI/UX • VFX polish • Gameplay Loops • Monetization</div>
+      </div>
+
+      <!-- Right: Stats -->
+      <aside class="hero-card reveal" style="transition-delay:.08s">
+        <div class="top">
+          <div class="pill"><span class="dot"></span><span>Result Till Date</span></div>
+          <div class="availability" title="Current availability">
+            <span class="pulse" aria-hidden="true"></span>
+            <span>Availability</span>
+          </div>
+        </div>
+
+        <div class="body">
+          <div class="stat-row">
+            <div class="stat stat-green">
+              <b>Retention +412%</b>
+              <span>Average growth in player retention per game after my involvement.</span>
+            </div>
+            <div class="stat stat-green">
+              <b>Revenue +394%</b>
+              <span>Growth in average revenue per game after my involvement.</span>
+            </div>
+            <div class="stat stat-green">
+              <b>Reviews +18%</b>
+              <span>Average increase in Positive Review % after my involvement.</span>
+            </div>
+            <div class="stat stat-green">
+              <b>Session +481%</b>
+              <span>Increase in average session length per player per game after my involvement.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <span class="chip">🎮 20+ Games Revived</span>
+          <span class="chip">🧑🏻‍💻 35+ Developers Served</span>
+          <span class="chip">💵 $1M+ Generated</span>
+          <span class="chip">🌐 30M+ Players Engaged</span>
+          <span class="chip">👷🏻‍♂️ 10+ Employment Provided</span>
+
+        </div>
+      </aside>
+    </div>
+  </main>
+
+<!-- MARQUEE -->
+  <section class="marquee" aria-label="Highlights">
+    <div class="wrap">
+      <div class="track" id="marqueeTrack">
+        <div class="word"><span class="spark"></span> GAME DESIGN</div>
+        <div class="word"><span class="spark"></span> VISUAL DIRECTION</div>
+        <div class="word"><span class="spark"></span> UI/UX</div>
+        <div class="word"><span class="spark"></span> VFX POLISH</div>
+        <div class="word"><span class="spark"></span> PROGRESSION</div>
+        <div class="word"><span class="spark"></span> RETENTION</div>
+        <div class="word"><span class="spark"></span> MONETIZATION</div>
+
+        <!-- duplicated for seamless scroll -->
+        <div class="word"><span class="spark"></span> GAME DESIGN</div>
+        <div class="word"><span class="spark"></span> VISUAL DIRECTION</div>
+        <div class="word"><span class="spark"></span> UI/UX</div>
+        <div class="word"><span class="spark"></span> VFX POLISH</div>
+        <div class="word"><span class="spark"></span> PROGRESSION</div>
+        <div class="word"><span class="spark"></span> RETENTION</div>
+        <div class="word"><span class="spark"></span> MONETIZATION</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT + TESTIMONIALS -->
+  <section id="about" class="section tight">
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <div class="label"><span class="dot"></span> About</div>
+          <h2 class="h2">Bibidh Gautam</h2>
+          <p class="sub">
+            I work at Bevel Creatives Pvt. Ltd. where I focus on helping indie games that are “almost there.”<br>
+            I’m obsessed with the small things: the sound of a click, the timing of a reward, the clarity of a UI screen,
+            the moment a player decides to stay. I find what’s causing players to drop, and fix it without breaking what’s already working. <br>
+            My journey initially started at the beginning of COVID-19 as a 3D Modeler. For around 4 years, I worked with dozens of creators and studios, helping them with 3D art and visual direction. 
+            Along the way, I got more and more involved in design decisions, and eventually decided, 3D Modeling is not the only thing I should limit myself to. I’ve since transitioned into a full-time design role, where I get to combine my love for visuals with my obsession for player psychology to uplift struggling games.
+            <br>As a Chief Executive Officer at Bevel Creatives, I lead a talented team of young developers to collaborate on projects we select to work on. My role involves directing design decisions, overseeing project execution, and ensuring that our work consistently meets high standards of quality and creativity. I’m passionate about creating games that not only look great but also provide engaging and memorable experiences for players. <br>
+            When I’m not working on games, you can find me playing guitar, watching dark conspiracy theory videos, or scrolling through infotainment content on Youtube or Tiktok. I also sketch sometimes, and I learn to cook new dishes once in a while! 
+          </p>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="quote span-6 reveal">
+          <p>“His team found the exact reason players were leaving… and fixed it without ruining the game’s identity.”</p>
+          <div class="who">
+            <span>Indie Developer</span>
+            <span>Retention & UX</span>
+          </div>
+        </div>
+
+        <div class="quote span-6 reveal" style="transition-delay:.05s">
+          <p>“The visuals went from ‘prototype’ to ‘premium’ in a single week. The UI finally looked polished. And pretty much every new minor details enhanced the overall playability. Amazing results!!”</p>
+          <div class="who">
+            <span>Studio Partner</span>
+            <span>Visual Direction</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  
+
+<!-- WORK -->
+  <section id="work" class="section">
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <div class="label"><span class="dot"></span> Work</div>
+          <h2 class="h2">Featured Rescues</h2>
+          <p class="sub">
+            A few sample projects showing how I help struggling indie games improve core loops, retention, visuals, and monetization.
+          </p>
+        </div>
+        <a class="btn" href="#contact">Request a full case study</a>
+      </div>
+
+      <div class="grid">
+        <article class="card span-6 reveal">
+          <div class="thumb thumb-hacker" aria-hidden="true"></div>
+          <div class="pad">
+            <div class="title">
+              <h3>Retention: Hacker Tycoon</h3>
+              <span class="tag">Case Study</span>
+            </div>
+            <p class="meta">
+              Reworked core loop + rewards, clarified goals, tightened pacing, and redesigned UI screens to improve retention.
+            </p>
+            <div class="pillrow">
+              <span class="tiny">Core Loop</span>
+              <span class="tiny">Economy</span>
+              <span class="tiny">UI Overhaul</span>
+              <span class="tiny">Retention</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-6 reveal" style="transition-delay:.05s">
+          <div class="thumb thumb-flashpoint" aria-hidden="true"></div>
+          <div class="pad">
+            <div class="title">
+              <h3>Visual Direction: FLASHPOINT</h3>
+              <span class="tag">Polish</span>
+            </div>
+            <p class="meta">
+              Lighting, VFX, typography, motion, and composition improvements to make the game look and feel more expensive.
+            </p>
+            <div class="pillrow">
+              <span class="tiny">VFX</span>
+              <span class="tiny">Lighting</span>
+              <span class="tiny">Typography</span>
+              <span class="tiny">Motion</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-4 reveal">
+          <div class="thumb thumb-dbr" aria-hidden="true"></div>
+          <div class="pad">
+            <div class="title">
+              <h3>UI/UX: Dragon Ball Rage</h3>
+              <span class="tag">UI</span>
+            </div>
+            <p class="meta">
+              Cleaner hierarchy, better spacing, faster navigation, and visual feedback that makes spending feel safe + satisfying.
+            </p>
+            <div class="pillrow">
+              <span class="tiny">UX</span>
+              <span class="tiny">UI Kit</span>
+              <span class="tiny">Icons</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-4 reveal" style="transition-delay:.05s">
+          <div class="thumb thumb-kidnapper" aria-hidden="true"></div>
+          <div class="pad">
+            <div class="title">
+              <h3>Monetization: The Kidnapper</h3>
+              <span class="tag">Strategy</span>
+            </div>
+            <p class="meta">
+              Monetization that doesn’t burn players. More value, more clarity, fewer regrets-higher conversion long-term.
+            </p>
+            <div class="pillrow">
+              <span class="tiny">Pricing</span>
+              <span class="tiny">Bundles</span>
+              <span class="tiny">Value</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-4 reveal" style="transition-delay:.1s">
+          <div class="thumb thumb-ctw" aria-hidden="true"></div>
+          <div class="pad">
+            <div class="title">
+              <h3>Gameplay Audit: Conquer The World</h3>
+              <span class="tag">Audit</span>
+            </div>
+            <p class="meta">
+              A fast teardown: what’s confusing, what’s boring, what’s missing-then a prioritized fix list you can ship.
+            </p>
+            <div class="pillrow">
+              <span class="tiny">Heuristics</span>
+              <span class="tiny">Funnel</span>
+              <span class="tiny">Fix Plan</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services" class="section tight">
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <div class="label"><span class="dot"></span> Services</div>
+          <h2 class="h2">What I can do for your game</h2>
+          <p class="sub">Pick one lane or combine them into a full “rescue package.”</p>
+        </div>
+      </div>
+
+      <div class="grid">
+        <article class="card span-4 reveal">
+          <div class="pad">
+            <div class="title">
+              <h3>Design Direction</h3>
+              <span class="tag">Strategy</span>
+            </div>
+            <p class="meta">Game loop, progression, difficulty curve, retention hooks, quests, and meta that makes sense.</p>
+            <div class="pillrow">
+              <span class="tiny">Core Loop</span><span class="tiny">Progression</span><span class="tiny">Retention</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-4 reveal" style="transition-delay:.05s">
+          <div class="pad">
+            <div class="title">
+              <h3>Visual Upgrade</h3>
+              <span class="tag">Polish</span>
+            </div>
+            <p class="meta">UI, VFX, lighting, typography, motion-everything that screams quality at first glance.</p>
+            <div class="pillrow">
+              <span class="tiny">UI</span><span class="tiny">VFX</span><span class="tiny">Motion</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-4 reveal" style="transition-delay:.1s">
+          <div class="pad">
+            <div class="title">
+              <h3>Indie Rescue Sprint</h3>
+              <span class="tag">Fast</span>
+            </div>
+            <p class="meta">A focused sprint to identify what’s failing, fix the biggest blocker, and ship upgrades quickly.</p>
+            <div class="pillrow">
+              <span class="tiny">Audit</span><span class="tiny">Priorities</span><span class="tiny">Ship</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section id="process" class="section">
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <div class="label"><span class="dot"></span> Process</div>
+          <h2 class="h2">How I uplift a struggling game</h2>
+          <p class="sub">The goal is simple: make the player understand, enjoy, and stick.</p>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step reveal"><b>01 - Diagnose</b><p>Watch first-time player flow, identify confusion points, friction, and “quit moments.”</p></div>
+        <div class="step reveal" style="transition-delay:.05s"><b>02 - Rebuild Loop</b><p>Clarify goals, rewards, and pacing. Fix progression so players always know what to do next.</p></div>
+        <div class="step reveal" style="transition-delay:.1s"><b>03 - Premium Pass</b><p>Upgrade UI/VFX/lighting/motion so the game looks trustworthy and feels satisfying to play.</p></div>
+        <div class="step reveal" style="transition-delay:.15s"><b>04 - Ship & Iterate</b><p>Measure outcomes, iterate fast, and keep improvements aligned with player psychology.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="section">
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <div class="label"><span class="dot"></span> Contact</div>
+          <h2 class="h2">Let’s make your game fun again</h2>
+          <p class="sub">Send details and I’ll reply with a plan, timeline, and what I’d improve first.</p>
+        </div>
+      </div>
+
+      <div class="contact">
+        <div class="form reveal">
+          <form id="contactForm">
+            <div class="field">
+              <label for="name">Your name</label>
+              <input id="name" name="name" type="text" placeholder="e.g., Alex / Studio Name" required />
+            </div>
+            <div class="field">
+              <label for="email">Your email</label>
+              <input id="email" name="email" type="email" placeholder="e.g., alex@email.com" required />
+            </div>
+            <div class="field">
+              <label for="message">Project details</label>
+              <textarea id="message" name="message" placeholder="What game is it? What’s currently struggling? Any links/screenshots?" required></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn primary" type="submit">Send Message</button>
+              <button class="btn" type="button" id="copyDiscord">Copy Discord</button>
+            </div>
+
+            <div class="note">
+              Tip: include your game link + what you want improved (retention, visuals, UI, progression, monetization).
+            </div>
+          </form>
+        </div>
+
+        <div class="hero-card reveal" style="transition-delay:.05s">
+          <div class="top">
+            <div class="availability"><span class="dot"></span><span>Availability</span></div>
+            <span class="tag">Nepal (NPT)</span>
+          </div>
+          <div class="body">
+            <p class="meta" style="margin:0 0 10px;">
+              Prefer a quick call? I can do a 15–20 min teardown of your game flow and send a written fix plan.
+            </p>
+
+            <div class="stat-row">
+              <div class="stat">
+                <b>Fast Audit</b>
+                <span>Top 10 fixes + priority order.</span>
+              </div>
+              <div class="stat">
+                <b>Rescue Sprint</b>
+                <span>Ship improvements in a focused cycle.</span>
+              </div>
+              <div class="stat">
+                <b>Visual Pass</b>
+                <span>UI/VFX polish for premium feel.</span>
+              </div>
+              <div class="stat">
+                <b>Direction</b>
+                <span>Long-term design guidance.</span>
+              </div>
+            </div>
+          </div>
+          <div class="footer">
+            <span class="chip">Email: <b id="emailText">bevelcreatives@gmail.com</b></span>
+            <span class="chip">Discord: <b id="discordText">@bevelededge</b></span>
+            <span class="chip">Company: <b>Bevel Creatives Pvt. Ltd.</b></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="yt-audio-container" style="display:none;">
+  <div id="player"></div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="wrap">
+      <div class="row">
+        <div>© <span id="year"></span> Bibidh Gautam : Game Design & Visuals</div>
+        <div class="social">
+          <a class="icon-link" href="https://www.linkedin.com/in/bibidh/" aria-label="LinkedIn" title="LinkedIn">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+              <path fill="currentColor" d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.5 23.5h4V7.98h-4V23.5zM8.5 7.98h3.83v2.12h.05c.53-1 1.83-2.12 3.77-2.12 4.03 0 4.78 2.65 4.78 6.1v9.42h-4v-8.36c0-2-.04-4.57-2.79-4.57-2.79 0-3.22 2.18-3.22 4.43v8.5h-4V7.98z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
