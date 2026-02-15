@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mobile Optimization Guide | Bevel Creatives</title>
+<link href="../Code/style.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="plasma-bg"></div>
+<canvas id="hex-canvas"></canvas>
+<div class="noise-overlay"></div>
+<header class="navbar glass">
+<div class="logo">
+<img alt="Bevel Creatives Logo" class="header-logo" src="../images/BevelCreatives_transparent.png"/>
+      Bevel<span>Creatives</span>
+</div>
+<nav>
+<a href="https://www.bevelcreatives.com.np/home">Home</a>
+<a href="https://www.bevelcreatives.com.np/about">About</a>
+<a href="https://www.bevelcreatives.com.np/services">Services</a>
+<a href="https://www.bevelcreatives.com.np/team">Team</a>
+<a href="https://www.bevelcreatives.com.np/wins">Results</a>
+  <a class="active" href="index.html">Blogs</a>
+<a href="https://www.bevelcreatives.com.np/contact">Contact</a>
+</nav>
+<button aria-expanded="false" aria-label="Open menu" class="hamburger" type="button">
+<span></span><span></span><span></span>
+</button>
+</header>
+<main class="article-reader-container">
+<div class="glass article-main-card">
+<header class="article-header">
+<span class="blog-category">Tech Talk</span>
+<h1>Optimizing Mobile Performance for Unreal Engine 5</h1>
+<div class="article-meta">
+<span>By <b>Bibidh Gautam</b></span> • <span>7 min read</span> • <span>Oct 28, 2025</span>
+</div>
+</header>
+<div class="article-featured-img" style="background-image: url('../images/retention.png');"></div>
+<div class="article-body">
+<p class="lead">In the mobile market, performance is the silent killer of retention. A beautiful game that runs at 20 FPS will always lose to a smooth game running at 60 FPS.</p>
+<h2>The Bottleneck: Draw Calls</h2>
+<p>On mid-range mobile devices, the biggest performance thief isn't usually the polygon count, it's the number of draw calls. Every unique material and mesh requires the CPU to tell the GPU what to render. In UE5, using <strong>Instance Static Meshes (ISM)</strong> or Hierarchical ISMs can reduce hundreds of draw calls into a single one, instantly freeing up overhead.</p>
+<div class="article-quote">
+          "Optimization isn't about removing features; it's about tricking the eye into seeing detail that isn't expensive to render."
+        </div>
+<h2>Mastering the Mobile Forward Renderer</h2>
+<p>While Desktop UE5 shines with Deferred Rendering, mobile projects should almost always stick to the <strong>Forward Shading Renderer</strong>. This significantly reduces the GPU memory bandwidth required, allowing for high-quality MSAA (Multi-Sample Anti-Aliasing) which makes your edges look crisp without the heavy cost of temporal upscaling.</p>
+<h2>3 Practical Performance Wins</h2>
+<ul>
+<li><strong>Texture Atlasing:</strong> Combine multiple small textures into a single 2048x2048 sheet. This minimizes state changes during rendering.</li>
+<li><strong>Aggressive LODs:</strong> Set your Level of Detail (LOD) transitions to be much tighter. On a small screen, the player won't notice a 50% reduction in vertex count at 10 meters away.</li>
+<li><strong>Disable Nanite for Mobile:</strong> While revolutionary on PC/Console, Nanite is still too heavy for mid-range mobile silicon. Use traditional optimized meshes for your mobile build targets.</li>
+</ul>
+<p>At Bevel Creatives, our tech leads conduct deep-dive profiling sessions using tools like RenderDoc and Snapdragon Profiler. We ensure that your game doesn't just look good in screenshots, but feels buttery smooth in the player's hands.</p>
+</div>
+<footer class="article-footer">
+  <a class="back-link" href="index.html">← Back to Insights</a>
+</footer>
+</div>
+</main>
+<footer class="footer-bottom">
+    © 2025 Bevel Creatives Pvt. Ltd. All rights reserved.
+  </footer>
+<script>
+    const canvas = document.getElementById('hex-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, rows, cols;
+    const hexRadius = 30;
+    const mouse = { x: -1000, y: -1000 };
+
+    function init() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      cols = Math.ceil(width / (hexRadius * 1.5)) + 1;
+      rows = Math.ceil(height / (hexRadius * Math.sqrt(3))) + 1;
+    }
+    window.addEventListener('resize', init);
+    window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+    function drawHexagon(x, y, radius, opacity) {
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(0, 255, 255, ${opacity})`;
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 6; i++) {
+        ctx.lineTo(x + radius * Math.cos(i * Math.PI / 3), y + radius * Math.sin(i * Math.PI / 3));
+      }
+      ctx.closePath(); ctx.stroke();
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          let x = c * hexRadius * 1.5;
+          let y = r * hexRadius * Math.sqrt(3);
+          if (c % 2 === 1) y += (hexRadius * Math.sqrt(3)) / 2;
+          const dist = Math.hypot(x - mouse.x, y - mouse.y);
+          let opacity = 0.05;
+          if (dist < 150) opacity = 0.4 - (dist / 150) * 0.35;
+          drawHexagon(x, y, hexRadius, opacity);
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+    init(); animate();
+  </script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const hamburger = document.querySelector(".hamburger");
+  const navbar = document.querySelector(".navbar");
+
+  if (!hamburger || !navbar) return;
+
+  hamburger.addEventListener("click", () => {
+    const open = navbar.classList.toggle("nav-open");
+    hamburger.classList.toggle("is-open", open);
+    hamburger.setAttribute("aria-expanded", String(open));
+  });
+
+  // Close when a nav link is clicked
+  navbar.querySelectorAll("nav a").forEach(link => {
+    link.addEventListener("click", () => {
+      navbar.classList.remove("nav-open");
+      hamburger.classList.remove("is-open");
+      hamburger.setAttribute("aria-expanded", "false");
+    });
+  });
+
+  // Close on resize back to desktop
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 768){
+      navbar.classList.remove("nav-open");
+      hamburger.classList.remove("is-open");
+      hamburger.setAttribute("aria-expanded", "false");
+    }
+  });
+});
+</script></body>
+</html>
