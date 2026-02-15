@@ -33,7 +33,7 @@ body::-webkit-scrollbar {
 .plasma-bg {
   position: fixed;
   inset: 0;
-  background: url("Tech.gif") center/cover no-repeat;
+  background: url("../images/Tech.gif") center/cover no-repeat;
   filter: blur(0px) brightness(1);
   opacity: 0.08;
   z-index: -2;
