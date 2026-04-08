@@ -272,6 +272,17 @@ button, input, textarea{font:inherit}
   .rgb-word .rgb-letter { animation: none; }
 }
 
+/* GLOBE MODULE */
+.mod-globe{
+  position:fixed;bottom:20px;right:20px;width:120px;height:120px;z-index:10;
+  padding:10px;display:flex;flex-direction:column;align-items:center;
+  overflow:hidden;flex-shrink:0;
+}
+.mod-label{font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:4px;font-family:'Share Tech Mono',monospace;align-self:flex-start;}
+.mod-globe::before{content:'';position:absolute;bottom:4px;right:4px;width:9px;height:9px;border-bottom:1.5px solid var(--a3);border-right:1.5px solid var(--a3);}
+#globe-canvas{width:100%;flex:1;display:block;cursor:none;}
+.globe-label{font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:4px;font-family:'Share Tech Mono',monospace;}
+
 .lead{
   max-width: 64ch;
   color: var(--muted);
@@ -611,6 +622,7 @@ textarea{min-height:120px; resize:vertical;}
   .section{padding:64px 0;}
   .hero{padding:58px 0 18px;}
   .aura{width:420px;height:420px; opacity:.65;}
+  .mod-globe{display:none;}
 }
 
 /* Reduced motion */
