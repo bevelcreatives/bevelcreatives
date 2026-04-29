@@ -172,7 +172,8 @@
     /* Sidebar */
     .sidebar {
       width: 250px;
-      flex-shrink: 0;
+      min-width: 110px;
+      flex-shrink: 1;
       background: var(--surf);
       border-right: 1px solid var(--border);
       display: flex;
@@ -325,6 +326,89 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    /* ── Responsive ──────────────────────────────────────────────────────── */
+
+    /* Tablet: shrink sidebar */
+    @media (max-width: 720px) {
+      .sidebar { width: 160px; min-width: 100px; }
+      .date-inp { width: 160px; }
+      .stats-bar { padding: 7px 12px; }
+    }
+
+    /* Mobile: flip layout */
+    @media (max-width: 520px) {
+      /* Header: hide back link, compact */
+      .hdr { padding: 0 10px; gap: 8px; }
+      .hdr-back { display: none; }
+      .hdr-logo { font-size: 14px; }
+      .tab-btn  { padding: 5px 10px; font-size: 13px; }
+
+      /* Stats bar: stack into two lines */
+      .stats-bar { padding: 7px 10px; gap: 6px; row-gap: 6px; }
+      .add-area  { flex: 0 0 auto; }
+      .date-inp  { width: 130px; font-size: 13px; }
+      .stats-right {
+        margin-left: 0;
+        width: 100%;
+        gap: 10px;
+        justify-content: flex-start;
+      }
+      .stat { font-size: 13px; }
+
+      /* Body: sidebar on top as horizontal strip */
+      .payout-body { flex-direction: column; }
+
+      .sidebar {
+        width: 100%;
+        min-width: 0;
+        max-height: 80px;
+        flex-direction: row;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+
+      /* Records section becomes a horizontal scrollable row */
+      .sb-section.records {
+        flex: 1;
+        flex-direction: row;
+        min-height: 0;
+        overflow: hidden;
+      }
+      .sb-label { display: none; }
+      .sb-scroll {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+      }
+      .rec-btn {
+        white-space: nowrap;
+        border-bottom: none;
+        border-right: 1px solid var(--border);
+        padding: 0 16px;
+        min-width: 90px;
+        height: 100%;
+        display: inline-flex;
+        align-items: center;
+        font-size: 13px;
+      }
+
+      /* Hide issues in sidebar — they still show in footer status */
+      .sb-section.issues { display: none; }
+
+      /* Grid area: takes all remaining space */
+      .grid-area { min-height: 0; }
+      .grid-scroll { padding: 6px 10px; }
+      .grid-hdr    { padding: 6px 10px 4px; }
+      .g-inp       { padding: 6px 8px; font-size: 14px; }
+
+      /* Footer: compact */
+      .payout-footer { padding: 8px 10px; gap: 8px; }
+      .payout-footer .btn { font-size: 13px; padding: 7px 12px; }
+      .footer-status { font-size: 12px; width: 100%; }
+    }
   </style>
 </head>
 <body>
