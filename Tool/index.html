@@ -309,17 +309,17 @@
     .del-confirm.open { display: flex; }
 
     /* ── Eligibility panel ───────────────────────────────────────────────── */
-    #panel-eligibility { align-items: center; justify-content: center; }
+    #panel-eligibility { align-items: center; justify-content: center; padding: 20px; }
     .elig-card {
       background: var(--surf);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 50px 60px;
-      width: min(460px, 92vw);
+      padding: 36px 40px;
+      width: min(680px, 96vw);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: 18px;
     }
     .elig-card h2 { font-size: 22px; font-weight: 700; }
     .elig-inp {
@@ -334,12 +334,60 @@
       text-align: center;
     }
     .elig-inp:focus { border-color: var(--blue); }
-    .elig-result { text-align: center; min-height: 80px; width: 100%; }
-    .elig-dates  { font-size: 14px; color: var(--muted); margin-bottom: 8px; line-height: 2; }
-    .elig-status { font-size: 36px; font-weight: 800; color: var(--muted); }
-    .elig-status.ok   { color: var(--green); }
-    .elig-status.bad  { color: var(--red); }
-    .elig-status.busy { font-size: 15px; font-weight: 400; color: var(--muted); }
+
+    /* Two-group result layout */
+    .elig-groups {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      width: 100%;
+    }
+    .elig-group {
+      background: var(--surf2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 110px;
+    }
+    .elig-group-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--cyan);
+      text-decoration: none;
+    }
+    .elig-group-name:hover { text-decoration: underline; }
+    .elig-group-dates {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.9;
+      flex: 1;
+    }
+    .elig-group-status {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--muted);
+    }
+    .elig-group-status.ok   { color: var(--green); }
+    .elig-group-status.bad  { color: var(--red); }
+    .elig-group-status.busy { font-size: 13px; font-weight: 400; color: var(--muted); }
+
+    /* Overall verdict */
+    .elig-verdict {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--muted);
+      text-align: center;
+    }
+    .elig-verdict.ok  { color: var(--green); }
+    .elig-verdict.bad { color: var(--red); }
+
+    @media (max-width: 480px) {
+      .elig-groups { grid-template-columns: 1fr; }
+      .elig-card { padding: 24px 18px; }
+    }
 
     /* ── Scrollbars ──────────────────────────────────────────────────────── */
     ::-webkit-scrollbar       { width: 6px; height: 6px; }
@@ -522,10 +570,19 @@
       <button class="btn btn-blue" style="width:100%;padding:11px;font-size:15px" onclick="checkElig()">
         Check User
       </button>
-      <div class="elig-result">
-        <div class="elig-dates"  id="eligDates"></div>
-        <div class="elig-status" id="eligStatus"></div>
+      <div class="elig-groups" id="eligGroups" style="display:none">
+        <div class="elig-group" id="eligG1">
+          <a class="elig-group-name" href="https://www.roblox.com/share/g/32582015" target="_blank">B's Base</a>
+          <div class="elig-group-dates" id="eligG1Dates"></div>
+          <div class="elig-group-status" id="eligG1Status"></div>
+        </div>
+        <div class="elig-group" id="eligG2">
+          <a class="elig-group-name" href="https://www.roblox.com/share/g/34169651" target="_blank">Compound Creations</a>
+          <div class="elig-group-dates" id="eligG2Dates"></div>
+          <div class="elig-group-status" id="eligG2Status"></div>
+        </div>
       </div>
+      <div class="elig-verdict" id="eligVerdict"></div>
     </div>
   </div>
 
@@ -955,34 +1012,75 @@ function parseCSV(text, fallbackDate) {
 // ── Eligibility checker ───────────────────────────────────────────────────────
 let eligBusy = false;
 
+function setGroupUI(statusEl, datesEl, res) {
+  if (res === null) {
+    statusEl.textContent = 'Checking…';
+    statusEl.className   = 'elig-group-status busy';
+    datesEl.textContent  = '';
+    return;
+  }
+  if (res.error) {
+    const msg = res.error === 'not_joined' ? 'NOT JOINED' : res.error.toUpperCase();
+    statusEl.textContent = msg;
+    statusEl.className   = 'elig-group-status bad';
+    datesEl.textContent  = '';
+  } else {
+    datesEl.innerHTML    = `Joined: ${res.joinDate}<br>Eligible on: ${res.eligibleDate}`;
+    statusEl.textContent = res.isEligible ? '✅ ELIGIBLE' : '⏳ INELIGIBLE';
+    statusEl.className   = 'elig-group-status ' + (res.isEligible ? 'ok' : 'bad');
+  }
+}
+
 async function checkElig() {
   if (eligBusy) return;
   const username = $('eligInp').value.trim();
   if (!username) return;
   eligBusy = true;
-  $('eligDates').textContent  = '';
-  $('eligStatus').textContent = 'Checking…';
-  $('eligStatus').className   = 'elig-status busy';
+
+  $('eligGroups').style.display  = 'none';
+  $('eligVerdict').textContent   = 'Checking…';
+  $('eligVerdict').className     = 'elig-verdict';
+
   try {
     const idRes = await callProxy('userid', { username });
     if (idRes.error) {
-      $('eligStatus').textContent = idRes.error === 'not_found' ? 'NOT FOUND' : idRes.error.toUpperCase();
-      $('eligStatus').className   = 'elig-status bad';
+      $('eligVerdict').textContent = idRes.error === 'not_found' ? 'USER NOT FOUND' : idRes.error.toUpperCase();
+      $('eligVerdict').className   = 'elig-verdict bad';
       return;
     }
-    await sleep(600);
-    const memRes = await callProxy('membership', null, `user_id=${idRes.id}`);
-    if (memRes.error) {
-      $('eligStatus').textContent = memRes.error === 'not_joined' ? 'NOT JOINED' : memRes.error.toUpperCase();
-      $('eligStatus').className   = 'elig-status bad';
-      return;
+
+    // Show group panels, set both to "Checking…"
+    $('eligGroups').style.display = 'grid';
+    setGroupUI($('eligG1Status'), $('eligG1Dates'), null);
+    setGroupUI($('eligG2Status'), $('eligG2Dates'), null);
+    $('eligVerdict').textContent = '';
+
+    // Query both groups in parallel
+    const [g1, g2] = await Promise.all([
+      callProxy('membership', null, `user_id=${idRes.id}&group=1`),
+      callProxy('membership', null, `user_id=${idRes.id}&group=2`),
+    ]);
+
+    setGroupUI($('eligG1Status'), $('eligG1Dates'), g1);
+    setGroupUI($('eligG2Status'), $('eligG2Dates'), g2);
+
+    const elig1 = !g1.error && g1.isEligible;
+    const elig2 = !g2.error && g2.isEligible;
+    const joined = !g1.error || !g2.error;
+
+    if (!joined) {
+      $('eligVerdict').textContent = 'NOT JOINED ANY GROUP';
+      $('eligVerdict').className   = 'elig-verdict bad';
+    } else if (elig1 || elig2) {
+      $('eligVerdict').textContent = '🎉 ELIGIBLE';
+      $('eligVerdict').className   = 'elig-verdict ok';
+    } else {
+      $('eligVerdict').textContent = 'NOT YET ELIGIBLE';
+      $('eligVerdict').className   = 'elig-verdict bad';
     }
-    $('eligDates').innerHTML    = `Joined: ${memRes.joinDate}<br>Eligible: ${memRes.eligibleDate}`;
-    $('eligStatus').textContent = memRes.isEligible ? 'ELIGIBLE' : 'INELIGIBLE';
-    $('eligStatus').className   = 'elig-status ' + (memRes.isEligible ? 'ok' : 'bad');
   } catch {
-    $('eligStatus').textContent = 'REQUEST FAILED';
-    $('eligStatus').className   = 'elig-status bad';
+    $('eligVerdict').textContent = 'REQUEST FAILED';
+    $('eligVerdict').className   = 'elig-verdict bad';
   } finally {
     eligBusy = false;
   }
