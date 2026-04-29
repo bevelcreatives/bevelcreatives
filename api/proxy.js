@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const { action, user_id } = req.query;
   const API_KEY         = process.env.ROBLOX_API_KEY;
   const GROUP_ID        = '32582015';
