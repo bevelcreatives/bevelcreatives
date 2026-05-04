@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}User Lookup{% endblock %}
+{% block page_title %}User Lookup{% endblock %}
+
+{% block topbar_right %}
+  <a id="export-user" class="btn btn-ghost" href="#">Export XLSX</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="filters">
+    <div class="filter-row">
+      <label class="filter filter-search">
+        <span class="filter-label">Roblox username / display name, Discord username / ID</span>
+        <input id="u-q" type="text" placeholder="Type a username, display name, or ID, then press Enter"/>
+      </label>
+      <label class="filter">
+        <span class="filter-label">From</span>
+        <input id="u-from" type="date"/>
+      </label>
+      <label class="filter">
+        <span class="filter-label">To</span>
+        <input id="u-to" type="date"/>
+      </label>
+      <button id="u-search" class="btn btn-primary btn-compact">Search</button>
+    </div>
+  </div>
+</div>
+
+<div id="user-summary" class="stats-grid" hidden>
+  <div class="stat-card"><div class="stat-label">Total Purchased (Robux)</div><div class="stat-value" id="u-total-amount">—</div><div class="stat-hint">Completed orders</div></div>
+  <div class="stat-card"><div class="stat-label">Total Orders</div><div class="stat-value" id="u-total-orders">—</div></div>
+  <div class="stat-card"><div class="stat-label">Completed</div><div class="stat-value good" id="u-total-completed">—</div></div>
+  <div class="stat-card"><div class="stat-label">Cancelled</div><div class="stat-value bad" id="u-total-cancelled">—</div></div>
+</div>
+
+<div class="card" id="user-orders-card" hidden>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date &amp; Time</th>
+          <th>Roblox</th>
+          <th class="num">Amount</th>
+          <th>Discord</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="user-orders-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="user-empty" class="empty" hidden>No matching orders.</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/users.js') }}"></script>
+{% endblock %}

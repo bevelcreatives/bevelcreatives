@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Orders{% endblock %}
+{% block page_title %}Orders{% endblock %}
+
+{% block topbar_right %}
+  <a id="export-btn" class="btn btn-ghost" href="#">Export XLSX</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="filters" id="filters">
+    <div class="filter-row">
+      <label class="filter filter-search">
+        <span class="filter-label">Search</span>
+        <input id="f-q" type="text" placeholder="Roblox username / display name, Discord username, ID, amount, order #"/>
+      </label>
+      <label class="filter">
+        <span class="filter-label">Status</span>
+        <select id="f-status">
+          <option value="">All</option>
+          {% for s in statuses %}
+            <option value="{{ s }}">{{ status_labels[s] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="filter">
+        <span class="filter-label">From</span>
+        <input id="f-from" type="date"/>
+      </label>
+      <label class="filter">
+        <span class="filter-label">To</span>
+        <input id="f-to" type="date"/>
+      </label>
+      <button id="f-clear" class="btn btn-ghost btn-compact">Clear Data</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table" id="orders-table">
+      <thead>
+        <tr>
+          <th>Date &amp; Time</th>
+          <th>Roblox</th>
+          <th class="num">Amount</th>
+          <th>Discord</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="orders-body">
+        <tr><td colspan="6" class="muted">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-foot">
+    <span id="orders-count" class="muted">—</span>
+  </div>
+</div>
+
+<!-- Detail modal -->
+<div class="modal" id="detail-modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card">
+    <div class="modal-head">
+      <div id="detail-title" class="modal-title">Order</div>
+      <button class="btn-close" data-close>&times;</button>
+    </div>
+    <div id="detail-body" class="modal-body">Loading…</div>
+  </div>
+</div>
+
+<div class="modal" id="clear-modal" hidden>
+  <div class="modal-backdrop" data-clear-close></div>
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="modal-title">Clear Stored Data</div>
+      <button class="btn-close" data-clear-close>&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>This will remove all stored orders, archived tickets, and active ticket records from the dashboard data file.</p>
+      <p id="clear-countdown" class="muted">Please wait 3 seconds before confirming.</p>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
+        <button id="clear-cancel" class="btn btn-ghost btn-compact" data-clear-close>Cancel</button>
+        <button id="clear-confirm" class="btn btn-compact" disabled>Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.STATUS_LABELS = {{ status_labels|tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

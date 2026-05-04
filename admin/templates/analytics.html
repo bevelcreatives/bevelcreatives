@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Sales Analytics{% endblock %}
+{% block page_title %}Sales Analytics{% endblock %}
+
+{% block topbar_right %}
+  <a id="export-analytics" class="btn btn-ghost" href="#">Export XLSX</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="filters">
+    <div class="filter-row">
+      <label class="filter">
+        <span class="filter-label">From</span>
+        <input id="a-from" type="date"/>
+      </label>
+      <label class="filter">
+        <span class="filter-label">To</span>
+        <input id="a-to" type="date"/>
+      </label>
+      <div class="preset-chips">
+        <button class="chip" data-range="7">Last 7d</button>
+        <button class="chip" data-range="30">Last 30d</button>
+        <button class="chip" data-range="90">Last 90d</button>
+        <button class="chip" data-range="all">All time</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="stats-grid" id="stats-grid">
+  <div class="stat-card"><div class="stat-label">Total Amount (Robux)</div><div class="stat-value" id="s-amount">—</div><div class="stat-hint">Completed only</div></div>
+  <div class="stat-card"><div class="stat-label">Total Orders</div><div class="stat-value" id="s-orders">—</div><div class="stat-hint">In range</div></div>
+  <div class="stat-card"><div class="stat-label">Completed</div><div class="stat-value good" id="s-completed">—</div></div>
+  <div class="stat-card"><div class="stat-label">Cancelled</div><div class="stat-value bad" id="s-cancelled">—</div></div>
+  <div class="stat-card"><div class="stat-label">Tickets Opened</div><div class="stat-value" id="s-opened">—</div></div>
+  <div class="stat-card"><div class="stat-label">Auto-deleted</div><div class="stat-value warn" id="s-auto">—</div></div>
+  <div class="stat-card"><div class="stat-label">Rejected</div><div class="stat-value bad" id="s-rejected">—</div></div>
+  <div class="stat-card"><div class="stat-label">Awaiting Review</div><div class="stat-value" id="s-awaiting">—</div></div>
+</div>
+
+<div class="chart-grid">
+  <div class="card chart-card">
+    <div class="chart-head">
+      <h3>Amount over time</h3>
+      <span class="muted">Completed Robux per day</span>
+    </div>
+    <canvas id="chart-amount"></canvas>
+  </div>
+  <div class="card chart-card">
+    <div class="chart-head">
+      <h3>Tickets over time</h3>
+      <span class="muted">Opened · Completed · Cancelled · Rejected · Auto-deleted</span>
+    </div>
+    <canvas id="chart-counts"></canvas>
+  </div>
+</div>
+
+<!-- Button click stats -->
+<div class="stats-grid" id="btn-stats-grid">
+  <div class="stat-card"><div class="stat-label">Total Button Clicks</div><div class="stat-value" id="bs-total">—</div><div class="stat-hint">Ticket open attempts</div></div>
+  <div class="stat-card"><div class="stat-label">Not In Group</div><div class="stat-value bad" id="bs-not-joined">—</div><div class="stat-hint">Not joined Roblox group</div></div>
+  <div class="stat-card"><div class="stat-label">Not Eligible Yet</div><div class="stat-value warn" id="bs-ineligible">—</div><div class="stat-hint">Account not eligible</div></div>
+  <div class="stat-card"><div class="stat-label">Eligible</div><div class="stat-value good" id="bs-eligible">—</div><div class="stat-hint">Ticket opened</div></div>
+  <div class="stat-card"><div class="stat-label">Not Found</div><div class="stat-value" id="bs-not-found">—</div><div class="stat-hint">Username not found</div></div>
+</div>
+
+<div class="card chart-card">
+  <div class="chart-head">
+    <h3>Button clicks over time</h3>
+    <span class="muted">Not in group · Not eligible · Eligible · Not found</span>
+  </div>
+  <canvas id="chart-button-clicks"></canvas>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-label">Proceeded (Pre-order)</div><div class="stat-value good" id="ic-proceed">—</div><div class="stat-hint">Ineligible users who paid now</div></div>
+  <div class="stat-card"><div class="stat-label">Bought Later</div><div class="stat-value bad" id="ic-later">—</div><div class="stat-hint">Ineligible users who declined</div></div>
+</div>
+
+<div class="card chart-card">
+  <div class="chart-head">
+    <h3>Ineligible user choices over time</h3>
+    <span class="muted">Proceeded · Bought Later</span>
+  </div>
+  <canvas id="chart-ineligible-choices"></canvas>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+{% endblock %}

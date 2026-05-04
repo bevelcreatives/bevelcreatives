@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard{% endblock %}
+{% block page_title %}Leaderboard{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="filters">
+    <div class="filter-row">
+      <span class="lb-heading">Most Robux Purchased</span>
+      <label class="filter">
+        <span class="filter-label">From</span>
+        <input id="lb-from" type="date"/>
+      </label>
+      <label class="filter">
+        <span class="filter-label">To</span>
+        <input id="lb-to" type="date"/>
+      </label>
+      <div class="preset-chips">
+        <button class="lb-chip chip" data-range="7">Last 7d</button>
+        <button class="lb-chip chip" data-range="30">Last 30d</button>
+        <button class="lb-chip chip" data-range="90">Last 90d</button>
+        <button class="lb-chip chip active" data-range="all">All time</button>
+      </div>
+    </div>
+  </div>
+  <div class="lb-tabs-bar">
+    <button class="lb-tab active" data-tab="roblox">Roblox Username</button>
+    <button class="lb-tab" data-tab="discord">Discord Username</button>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table" id="lb-roblox-table">
+      <thead><tr><th class="lb-rank">#</th><th>Roblox Username</th><th class="num">Total Robux</th><th class="num">Completed Orders</th></tr></thead>
+      <tbody id="lb-roblox-body"><tr class="no-hover"><td colspan="4" class="muted muted-center">Loading…</td></tr></tbody>
+    </table>
+    <table class="data-table" id="lb-discord-table" hidden>
+      <thead><tr><th class="lb-rank">#</th><th>Discord Username</th><th class="num">Total Robux</th><th class="num">Completed Orders</th></tr></thead>
+      <tbody id="lb-discord-body"><tr class="no-hover"><td colspan="4" class="muted muted-center">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/leaderboard.js') }}"></script>
+{% endblock %}
