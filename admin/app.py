@@ -1,5 +1,5 @@
-﻿"""
-B's Bobux â€” Admin Dashboard
+"""
+B's Bobux - Admin Dashboard
 A single Flask app that reads ticket_data.json (shared with the Discord bot)
 and serves an admin-only UI for orders, analytics, and XLSX exports.
 
@@ -43,7 +43,7 @@ from .data import (
     button_stats, ineligible_choice_stats, clear_dashboard_data, STATUSES, STATUS_LABELS,
 )
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€ openpyxl (optional import; raise a helpful error if missing) â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€â"€â"€â"€â"€â"€â"€ openpyxl (optional import; raise a helpful error if missing) â"€â"€â"€â"€â"€â"€â"€â"€â"€
 try:
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill, Alignment
@@ -53,7 +53,7 @@ except ImportError:
     HAS_OPENPYXL = False
 
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€ app â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€â"€â"€â"€â"€â"€â"€ app â"€â"€â"€â"€â"€â"€â"€â"€â"€
 app = Flask(__name__, static_folder="static", template_folder="templates")
 DEFAULT_SECRET_KEY = "dev-insecure-change-me-in-production"
 IS_PRODUCTION = bool(os.getenv("RENDER") or os.getenv("VERCEL") or os.getenv("FLASK_ENV") == "production")
@@ -93,7 +93,7 @@ def _safe_redirect_target() -> str:
     return target if _is_safe_redirect_target(target) else url_for("dashboard")
 
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€ auth â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€â"€â"€â"€â"€â"€â"€ auth â"€â"€â"€â"€â"€â"€â"€â"€â"€
 def login_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
@@ -125,7 +125,7 @@ def logout():
     return redirect(url_for("login"))
 
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€ views â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€â"€â"€â"€â"€â"€â"€ views â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @app.route("/")
 @login_required
 def dashboard():
@@ -151,7 +151,7 @@ def leaderboard_page():
     return render_template("leaderboard.html")
 
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€ JSON API â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€â"€â"€â"€â"€â"€â"€ JSON API â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @app.route("/api/orders")
 @login_required
 def api_orders():
@@ -203,16 +203,16 @@ def api_order_screenshot(order_no: int):
     if _KV_URL and _KV_TOKEN:
         try:
             resp = _requests.get(
-                f”{_KV_URL}/get/screenshot:{order_no}”,
-                headers={“Authorization”: f”Bearer {_KV_TOKEN}”},
+                f"{_KV_URL}/get/screenshot:{order_no}",
+                headers={"Authorization": f"Bearer {_KV_TOKEN}"},
                 timeout=5,
             )
             if resp.ok:
-                value = resp.json().get(“result”)
+                value = resp.json().get("result")
                 if value:
                     d = json.loads(value)
-                    img_bytes = base64.b64decode(d[“data”])
-                    content_type = d.get(“content_type”, “image/png”)
+                    img_bytes = base64.b64decode(d["data"])
+                    content_type = d.get("content_type", "image/png")
                     return send_file(
                         io.BytesIO(img_bytes),
                         mimetype=content_type,
@@ -222,27 +222,27 @@ def api_order_screenshot(order_no: int):
             pass
 
     # Fall back to local file (local dev only)
-    filename = match.get(“screenshot_filename”)
+    filename = match.get("screenshot_filename")
     if filename:
-        screenshot_dir = Path(__file__).resolve().parent.parent / “screenshots”
+        screenshot_dir = Path(__file__).resolve().parent.parent / "screenshots"
         file_path = screenshot_dir / filename
         if file_path.exists():
             return send_file(file_path)
 
     # Last resort: CDN URL (may be expired)
-    target = match.get(“screenshot_log_url”) or match.get(“screenshot_url”)
+    target = match.get("screenshot_log_url") or match.get("screenshot_url")
     if not target:
-        return jsonify({“error”: “screenshot_not_found”}), 404
+        return jsonify({"error": "screenshot_not_found"}), 404
 
     parsed = urlparse(target)
     allowed_hosts = {
-        “cdn.discordapp.com”,
-        “media.discordapp.net”,
-        “images-ext-1.discordapp.net”,
-        “images-ext-2.discordapp.net”,
+        "cdn.discordapp.com",
+        "media.discordapp.net",
+        "images-ext-1.discordapp.net",
+        "images-ext-2.discordapp.net",
     }
-    if parsed.scheme != “https” or parsed.netloc not in allowed_hosts:
-        abort(400, description=”Invalid screenshot URL.”)
+    if parsed.scheme != "https" or parsed.netloc not in allowed_hosts:
+        abort(400, description="Invalid screenshot URL.")
 
     return redirect(target, code=302)
 
@@ -307,7 +307,7 @@ def api_clear_data():
     return jsonify({"ok": True})
 
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€ XLSX export â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€â"€â"€â"€â"€â"€â"€ XLSX export â"€â"€â"€â"€â"€â"€â"€â"€â"€
 def _require_openpyxl():
     if not HAS_OPENPYXL:
         abort(500, description="openpyxl is not installed on the server.")
@@ -472,14 +472,14 @@ def export_analytics():
         ("Awaiting Review",                   stats["total_awaiting"]),
         ("Total Amount (Robux, completed)",   stats["total_amount_completed"]),
         ("",                                  ""),
-        ("Button Clicks â€” Total",             btn["totals"].get("total", 0)),
-        ("Button Clicks â€” Not In Group",      btn["totals"].get("not_joined", 0)),
-        ("Button Clicks â€” Not Eligible Yet",  btn["totals"].get("ineligible", 0)),
-        ("Button Clicks â€” Eligible",          btn["totals"].get("eligible", 0)),
-        ("Button Clicks â€” Not Found",         btn["totals"].get("not_found", 0)),
+        ("Button Clicks - Total",             btn["totals"].get("total", 0)),
+        ("Button Clicks - Not In Group",      btn["totals"].get("not_joined", 0)),
+        ("Button Clicks - Not Eligible Yet",  btn["totals"].get("ineligible", 0)),
+        ("Button Clicks - Eligible",          btn["totals"].get("eligible", 0)),
+        ("Button Clicks - Not Found",         btn["totals"].get("not_found", 0)),
         ("",                                  ""),
-        ("Ineligible â€” Proceeded",            ic["totals"].get("proceed", 0)),
-        ("Ineligible â€” Bought Later",         ic["totals"].get("later", 0)),
+        ("Ineligible - Proceeded",            ic["totals"].get("proceed", 0)),
+        ("Ineligible - Bought Later",         ic["totals"].get("later", 0)),
     ]:
         ws.append(list(r))
     _autosize(ws)
@@ -522,7 +522,7 @@ def export_analytics():
     return _xlsx_response(wb, f"analytics-{stamp}.xlsx")
 
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€ health â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€â"€â"€â"€â"€â"€â"€ health â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @app.route("/healthz")
 def healthz():
     return "ok", 200
@@ -544,7 +544,7 @@ def add_security_headers(resp: Response):
     return resp
 
 
-# â”€â”€ WSGI entrypoint â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€ WSGI entrypoint â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 # When SCRIPT_NAME is set (e.g. "/admin"), mount the app at that prefix so
 # Flask's url_for() and redirect() include it automatically.
 _script_name = os.getenv("SCRIPT_NAME", "")
