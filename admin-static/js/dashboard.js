@@ -56,7 +56,7 @@
     tbody.innerHTML = orders.map(o => `
       <tr data-order="${o.order}">
         <td class="mono">${escapeHtml(o.created_at_display || '—')}</td>
-        <td>${o.roblox_edited ? '📝 ' : ''}${escapeHtml(o.roblox || '—')}</td>
+        <td>${o.roblox_edited ? '📝 ' : ''}${escapeHtml(o.roblox || '—')}${o.roblox_display_name && o.roblox_display_name !== o.roblox ? '<br><span class="muted" style="font-size:0.82em">' + escapeHtml(o.roblox_display_name) + '</span>' : ''}</td>
         <td class="num">${o.amount_edited ? '📝 ' : ''}${fmtNum(o.amount)}</td>
         <td>${escapeHtml(o.discord_name || '—')}</td>
         <td><span class="badge badge-${o.status}">${escapeHtml(o.status_label)}</span></td>

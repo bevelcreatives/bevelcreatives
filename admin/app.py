@@ -169,6 +169,7 @@ def api_orders():
             "created_at_display": o["created_at_display"],
             "created_at":         o["created_at"],
             "roblox":             o["roblox"],
+            "roblox_display_name": o.get("roblox_display_name", ""),
             "roblox_edited":      o["roblox_edited"],
             "amount":             o["amount"],
             "amount_edited":      o["amount_edited"],
