@@ -12,13 +12,17 @@ Env vars:
 """
 from __future__ import annotations
 
+import base64
 import hmac
 import io
+import json
 import os
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
 from urllib.parse import urlparse
+
+import requests as _requests
 
 # Load .env before reading env vars (python-dotenv is in requirements.txt)
 try:
@@ -67,6 +71,8 @@ if os.getenv("SESSION_COOKIE_PATH"):
 
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
+_KV_URL   = os.getenv("KV_REST_API_URL", "")
+_KV_TOKEN = os.getenv("KV_REST_API_TOKEN", "")
 
 if IS_PRODUCTION and app.secret_key == DEFAULT_SECRET_KEY:
     raise RuntimeError("SECRET_KEY must be set in production.")
@@ -193,28 +199,50 @@ def api_order_screenshot(order_no: int):
     if not match:
         return jsonify({"error": "not_found"}), 404
 
-    # Prefer local file â€” immune to Discord CDN expiry
-    filename = match.get("screenshot_filename")
+    # Try KV first (uploaded by bot on screenshot receipt)
+    if _KV_URL and _KV_TOKEN:
+        try:
+            resp = _requests.get(
+                f”{_KV_URL}/get/screenshot:{order_no}”,
+                headers={“Authorization”: f”Bearer {_KV_TOKEN}”},
+                timeout=5,
+            )
+            if resp.ok:
+                value = resp.json().get(“result”)
+                if value:
+                    d = json.loads(value)
+                    img_bytes = base64.b64decode(d[“data”])
+                    content_type = d.get(“content_type”, “image/png”)
+                    return send_file(
+                        io.BytesIO(img_bytes),
+                        mimetype=content_type,
+                        as_attachment=False,
+                    )
+        except Exception:
+            pass
+
+    # Fall back to local file (local dev only)
+    filename = match.get(“screenshot_filename”)
     if filename:
-        screenshot_dir = Path(__file__).resolve().parent.parent / "screenshots"
+        screenshot_dir = Path(__file__).resolve().parent.parent / “screenshots”
         file_path = screenshot_dir / filename
         if file_path.exists():
             return send_file(file_path)
 
-    # Fall back to CDN URL (may be expired)
-    target = match.get("screenshot_log_url") or match.get("screenshot_url")
+    # Last resort: CDN URL (may be expired)
+    target = match.get(“screenshot_log_url”) or match.get(“screenshot_url”)
     if not target:
-        return jsonify({"error": "screenshot_not_found"}), 404
+        return jsonify({“error”: “screenshot_not_found”}), 404
 
     parsed = urlparse(target)
     allowed_hosts = {
-        "cdn.discordapp.com",
-        "media.discordapp.net",
-        "images-ext-1.discordapp.net",
-        "images-ext-2.discordapp.net",
+        “cdn.discordapp.com”,
+        “media.discordapp.net”,
+        “images-ext-1.discordapp.net”,
+        “images-ext-2.discordapp.net”,
     }
-    if parsed.scheme != "https" or parsed.netloc not in allowed_hosts:
-        abort(400, description="Invalid screenshot URL.")
+    if parsed.scheme != “https” or parsed.netloc not in allowed_hosts:
+        abort(400, description=”Invalid screenshot URL.”)
 
     return redirect(target, code=302)
 
