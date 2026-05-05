@@ -17,6 +17,7 @@ import hmac
 import io
 import json
 import os
+import time as _time
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
@@ -73,8 +74,6 @@ ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
 _KV_URL        = os.getenv("KV_REST_API_URL", "")
 _KV_TOKEN      = os.getenv("KV_REST_API_TOKEN", "")
-_BOT_API_URL   = os.getenv("BOT_API_URL", "")
-_BOT_API_SECRET = os.getenv("BOT_API_SECRET", "")
 
 if IS_PRODUCTION and app.secret_key == DEFAULT_SECRET_KEY:
     raise RuntimeError("SECRET_KEY must be set in production.")
@@ -313,26 +312,49 @@ def api_clear_data():
 @app.route("/api/bulk-complete", methods=["POST"])
 @login_required
 def api_bulk_complete():
-    if not _BOT_API_URL:
-        return jsonify({"error": "bot_api_not_configured",
-                        "message": "Set BOT_API_URL in the dashboard environment."}), 503
+    if not _KV_URL or not _KV_TOKEN:
+        return jsonify({"error": "kv_not_configured"}), 503
     payload = request.get_json(silent=True) or {}
     orders  = payload.get("orders", [])
     if not orders:
         return jsonify({"error": "no_orders"}), 400
-    headers = {"Content-Type": "application/json"}
-    if _BOT_API_SECRET:
-        headers["Authorization"] = f"Bearer {_BOT_API_SECRET}"
+
+    ts  = int(_time.time() * 1000)
+    cmd = json.dumps({"orders": orders, "ts": ts, "completed_by": "Dashboard Admin"})
+    _kv_headers = {"Authorization": f"Bearer {_KV_TOKEN}"}
+
+    # Write command for the bot to pick up
     try:
-        resp = _requests.post(
-            _BOT_API_URL.rstrip("/") + "/api/bulk-complete",
-            json={"orders": orders, "completed_by": "Dashboard Admin"},
-            headers=headers,
-            timeout=60,
-        )
-        return jsonify(resp.json()), resp.status_code
+        _requests.post(_KV_URL, json=["SET", "bulk_complete_cmd", cmd],
+                       headers=_kv_headers, timeout=10)
     except Exception as exc:
-        return jsonify({"error": "bot_unreachable", "message": str(exc)}), 502
+        return jsonify({"error": "kv_write_failed", "message": str(exc)}), 502
+
+    # Poll up to 90 s for the result (bot polls every 3 s)
+    deadline = _time.time() + 90
+    while _time.time() < deadline:
+        _time.sleep(2)
+        try:
+            resp = _requests.post(_KV_URL, json=["GET", "bulk_complete_result"],
+                                  headers=_kv_headers, timeout=10)
+            raw = resp.json().get("result")
+            if raw:
+                result = json.loads(raw)
+                if result.get("ts") == ts:
+                    _requests.post(_KV_URL, json=["DEL", "bulk_complete_result"],
+                                   headers=_kv_headers, timeout=5)
+                    return jsonify(result), 200
+        except Exception:
+            pass
+
+    # Timed out — clean up the command key so it doesn't fire later
+    try:
+        _requests.post(_KV_URL, json=["DEL", "bulk_complete_cmd"],
+                       headers=_kv_headers, timeout=5)
+    except Exception:
+        pass
+    return jsonify({"error": "timeout",
+                    "message": "Bot did not respond within 90 s. Is it running?"}), 504
 
 
 # â"€â"€â"€â"€â"€â"€â"€â"€â"€ XLSX export â"€â"€â"€â"€â"€â"€â"€â"€â"€
