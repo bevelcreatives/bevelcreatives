@@ -71,8 +71,10 @@ if os.getenv("SESSION_COOKIE_PATH"):
 
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
-_KV_URL   = os.getenv("KV_REST_API_URL", "")
-_KV_TOKEN = os.getenv("KV_REST_API_TOKEN", "")
+_KV_URL        = os.getenv("KV_REST_API_URL", "")
+_KV_TOKEN      = os.getenv("KV_REST_API_TOKEN", "")
+_BOT_API_URL   = os.getenv("BOT_API_URL", "")
+_BOT_API_SECRET = os.getenv("BOT_API_SECRET", "")
 
 if IS_PRODUCTION and app.secret_key == DEFAULT_SECRET_KEY:
     raise RuntimeError("SECRET_KEY must be set in production.")
@@ -306,6 +308,31 @@ def api_clear_data():
 
     clear_dashboard_data()
     return jsonify({"ok": True})
+
+
+@app.route("/api/bulk-complete", methods=["POST"])
+@login_required
+def api_bulk_complete():
+    if not _BOT_API_URL:
+        return jsonify({"error": "bot_api_not_configured",
+                        "message": "Set BOT_API_URL in the dashboard environment."}), 503
+    payload = request.get_json(silent=True) or {}
+    orders  = payload.get("orders", [])
+    if not orders:
+        return jsonify({"error": "no_orders"}), 400
+    headers = {"Content-Type": "application/json"}
+    if _BOT_API_SECRET:
+        headers["Authorization"] = f"Bearer {_BOT_API_SECRET}"
+    try:
+        resp = _requests.post(
+            _BOT_API_URL.rstrip("/") + "/api/bulk-complete",
+            json={"orders": orders, "completed_by": "Dashboard Admin"},
+            headers=headers,
+            timeout=60,
+        )
+        return jsonify(resp.json()), resp.status_code
+    except Exception as exc:
+        return jsonify({"error": "bot_unreachable", "message": str(exc)}), 502
 
 
 # â"€â"€â"€â"€â"€â"€â"€â"€â"€ XLSX export â"€â"€â"€â"€â"€â"€â"€â"€â"€

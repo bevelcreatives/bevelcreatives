@@ -32,6 +32,7 @@
         <input id="f-to" type="date"/>
       </label>
       <button id="f-clear" class="btn btn-ghost btn-compact">Clear Data</button>
+      <button id="verify-btn" class="btn btn-compact" disabled style="margin-left:auto">Verify Selected (<span id="verify-count">0</span>)</button>
     </div>
   </div>
 
@@ -39,6 +40,7 @@
     <table class="data-table" id="orders-table">
       <thead>
         <tr>
+          <th class="sel-col"><input type="checkbox" id="sel-all" title="Select all visible"></th>
           <th>Date &amp; Time</th>
           <th>Roblox</th>
           <th class="num">Amount</th>
@@ -83,6 +85,31 @@
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
         <button id="clear-cancel" class="btn btn-ghost btn-compact" data-clear-close>Cancel</button>
         <button id="clear-confirm" class="btn btn-compact" disabled>Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" id="verify-modal" hidden>
+  <div class="modal-backdrop" data-verify-close></div>
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="modal-title" id="verify-modal-title">Verify Selected Orders</div>
+      <button class="btn-close" data-verify-close>&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="verify-body">
+        <p id="verify-summary"></p>
+        <ul id="verify-list" style="margin:8px 0 14px;padding-left:18px;max-height:220px;overflow-y:auto;font-size:0.9em;"></ul>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
+          <button class="btn btn-ghost btn-compact" data-verify-close>Cancel</button>
+          <button id="verify-confirm" class="btn btn-compact">Complete All</button>
+        </div>
+      </div>
+      <div id="verify-result" hidden>
+        <ul id="verify-result-list" style="margin:8px 0 14px;padding-left:18px;max-height:260px;overflow-y:auto;font-size:0.9em;"></ul>
+        <div style="display:flex;justify-content:flex-end;margin-top:14px;">
+          <button class="btn btn-ghost btn-compact" data-verify-close>Close</button>
+        </div>
       </div>
     </div>
   </div>
