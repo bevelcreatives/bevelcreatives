@@ -226,7 +226,7 @@
     .grid-area { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
     .grid-hdr {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 120px;
       gap: 6px;
       padding: 8px 16px 6px;
       background: var(--surf);
@@ -237,7 +237,7 @@
     .grid-scroll   { flex: 1; overflow-y: auto; padding: 8px 16px; }
     .grid-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 120px;
       gap: 6px;
       margin-bottom: 5px;
     }
@@ -252,6 +252,25 @@
       width: 100%;
     }
     .g-inp:focus { border-color: var(--blue); }
+    .row-status {
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      background: var(--inp);
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+    .row-status.ok { color: var(--green); }
+    .row-status.warn { color: var(--yellow); }
+    .row-status.err { color: var(--red); }
+    .row-status.busy { color: var(--muted); font-weight: 600; }
 
     /* Empty state */
     .empty-st {
@@ -470,7 +489,10 @@
       .grid-area { min-height: 0; }
       .grid-scroll { padding: 6px 10px; }
       .grid-hdr    { padding: 6px 10px 4px; }
+      .grid-hdr,
+      .grid-row { grid-template-columns: minmax(0, 1fr) minmax(76px, 0.65fr) 82px; }
       .g-inp       { padding: 6px 8px; font-size: 14px; }
+      .row-status  { min-height: 30px; font-size: 10px; padding: 0 4px; }
 
       /* Footer: compact */
       .payout-footer { padding: 8px 10px; gap: 8px; }
@@ -533,6 +555,7 @@
           <div class="grid-hdr">
             <span>Username</span>
             <span>Amount (Robux)</span>
+            <span>Status</span>
           </div>
           <div class="grid-scroll" id="gridScroll"></div>
         </div>
@@ -599,6 +622,9 @@ let data       = {};   // { label: { usernames: string[MAX], robux: string[MAX] 
 let curTab     = null;
 let csvRows    = [];
 let processing = false;
+let eligibilityCache = {}; // usernameLower -> live eligibility result
+let rowCheckTimers   = {};
+let rowUserKeys      = {};
 
 // Close delete popup on outside click
 document.addEventListener('click', e => {
@@ -631,17 +657,26 @@ function switchPanel(name) {
 
     const u = document.createElement('input');
     u.className = 'g-inp'; u.id = `u${i}`; u.placeholder = 'Username';
-    u.addEventListener('input', updateStats);
-    u.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $(`a${i}`).focus(); } });
+    u.addEventListener('input', () => { updateStats(); scheduleRowEligibility(i); });
+    u.addEventListener('blur', () => checkRowEligibility(i));
+    u.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); checkRowEligibility(i); $(`a${i}`).focus(); } });
 
     const a = document.createElement('input');
     a.className = 'g-inp'; a.id = `a${i}`; a.placeholder = 'Amount';
-    a.addEventListener('input', updateStats);
+    a.addEventListener('input', () => { updateStats(); invalidatePrepared(); });
     a.addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); if (i + 1 < MAX) $(`u${i+1}`).focus(); }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        checkRowEligibility(i);
+        if (i + 1 < MAX) $(`u${i+1}`).focus();
+      }
     });
 
-    row.appendChild(u); row.appendChild(a);
+    const st = document.createElement('div');
+    st.className = 'row-status';
+    st.id = `st${i}`;
+
+    row.appendChild(u); row.appendChild(a); row.appendChild(st);
     scroll.appendChild(row);
   }
 })();
@@ -701,6 +736,8 @@ function switchTab(label) {
     $(`a${i}`).value = d.robux[i]     || '';
   }
   updateStats();
+  refreshVisibleRowStatuses();
+  renderCachedIssues();
 }
 
 function saveTab() {
@@ -726,6 +763,153 @@ function updateStats() {
   $('sEntries').textContent = `Total entries: ${entries}`;
   $('sTotal').textContent   = `Total Amount: ${total.toLocaleString()}`;
   $('sDay').textContent     = `Day Total: ${day.toLocaleString()}`;
+}
+
+function invalidatePrepared() {
+  csvRows = [];
+  $('exportBtns').innerHTML = '';
+}
+
+function usernameKey(username) {
+  return username.trim().toLowerCase();
+}
+
+function setRowStatus(i, text = '', cls = '') {
+  const el = $(`st${i}`);
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'row-status' + (cls ? ' ' + cls : '');
+}
+
+function refreshVisibleRowStatuses() {
+  for (let i = 0; i < MAX; i++) {
+    const key = usernameKey($(`u${i}`).value || '');
+    rowUserKeys[i] = key;
+    if (!key) {
+      setRowStatus(i);
+      continue;
+    }
+    const cached = eligibilityCache[key];
+    if (!cached) setRowStatus(i);
+    else if (cached.status === 'pending') setRowStatus(i, 'Checking...', 'busy');
+    else if (cached.status === 'ok') setRowStatus(i, 'Eligible', 'ok');
+    else if (cached.status === 'warn') setRowStatus(i, 'Ineligible', 'warn');
+    else setRowStatus(i, 'Issue', 'err');
+  }
+}
+
+function scheduleRowEligibility(i, delay = 650) {
+  invalidatePrepared();
+  const username = $(`u${i}`).value.trim();
+  const key = usernameKey(username);
+  rowUserKeys[i] = key;
+  clearTimeout(rowCheckTimers[i]);
+  if (!key) {
+    setRowStatus(i);
+    renderCachedIssues();
+    return;
+  }
+  if (eligibilityCache[key]?.status === 'ok' || eligibilityCache[key]?.status === 'warn' || eligibilityCache[key]?.status === 'err') {
+    refreshVisibleRowStatuses();
+    renderCachedIssues();
+    return;
+  }
+  setRowStatus(i, 'Queued...', 'busy');
+  rowCheckTimers[i] = setTimeout(() => checkRowEligibility(i), delay);
+}
+
+async function checkRowEligibility(i) {
+  clearTimeout(rowCheckTimers[i]);
+  const username = $(`u${i}`).value.trim();
+  const key = usernameKey(username);
+  rowUserKeys[i] = key;
+  if (!key) {
+    setRowStatus(i);
+    renderCachedIssues();
+    return null;
+  }
+
+  const cached = eligibilityCache[key];
+  if (cached?.status === 'pending') return cached.promise;
+  if (cached && cached.username === username && cached.status !== 'pending') {
+    refreshVisibleRowStatuses();
+    renderCachedIssues();
+    return cached;
+  }
+
+  setRowStatus(i, 'Checking...', 'busy');
+  setStatus(`Checking eligibility: ${username}`);
+  const promise = lookupEligibility(username);
+  eligibilityCache[key] = { status: 'pending', username, promise };
+
+  try {
+    const result = await promise;
+    eligibilityCache[key] = result;
+    refreshVisibleRowStatuses();
+    renderCachedIssues();
+    setStatus(result.status === 'err' ? `${username}: ${result.msg}` : `${username}: checked`, result.status === 'err' ? 'err' : 'ok');
+    return result;
+  } catch {
+    const result = { status: 'err', username, msg: 'Request failed' };
+    eligibilityCache[key] = result;
+    refreshVisibleRowStatuses();
+    renderCachedIssues();
+    setStatus(`${username}: request failed`, 'err');
+    return result;
+  }
+}
+
+async function lookupEligibility(username) {
+  const idRes = await callProxy('userid', { username });
+  if (idRes.error === 'not_found') return { status: 'err', username, msg: 'Not found on Roblox' };
+  if (idRes.error === 'RATE_LIMITED') return { status: 'err', username, msg: 'Rate limited - retry in ~60s' };
+  if (idRes.error) return { status: 'err', username, msg: idRes.error };
+
+  const [g1, g2] = await Promise.all([
+    callProxy('membership', null, `user_id=${idRes.id}&group=1`),
+    callProxy('membership', null, `user_id=${idRes.id}&group=2`),
+  ]);
+  const groupResults = [g1, g2];
+  const joined = groupResults.filter(g => !g.error);
+  const hardError = groupResults.find(g => g.error && g.error !== 'not_joined');
+
+  if (!joined.length) {
+    if (hardError?.error === 'RATE_LIMITED') return { status: 'err', username, id: idRes.id, msg: 'Rate limited - retry in ~60s' };
+    if (hardError?.error) return { status: 'err', username, id: idRes.id, msg: hardError.error };
+    return { status: 'err', username, id: idRes.id, msg: 'Not joined' };
+  }
+
+  const eligible = joined.find(g => g.isEligible);
+  if (eligible) {
+    return { status: 'ok', username, id: idRes.id, isEligible: true, eligibleDate: eligible.eligibleDate };
+  }
+
+  const eligibleDate = joined
+    .map(g => g.eligibleDate)
+    .filter(Boolean)
+    .sort()[0] || 'unknown';
+  return { status: 'warn', username, id: idRes.id, isEligible: false, eligibleDate, msg: `Eligible on ${eligibleDate}` };
+}
+
+function renderCachedIssues() {
+  const visibleKeys = new Set();
+  for (const d of Object.values(data)) {
+    d.usernames.forEach(u => {
+      const key = usernameKey(u || '');
+      if (key) visibleKeys.add(key);
+    });
+  }
+  const issues = [];
+  for (const key of visibleKeys) {
+    const item = eligibilityCache[key];
+    if (!item || item.status === 'pending' || item.status === 'ok') continue;
+    issues.push({
+      type: item.status === 'warn' ? 'warn' : 'err',
+      username: item.username,
+      msg: item.status === 'warn' ? item.msg : item.msg,
+    });
+  }
+  renderIssues(issues);
 }
 
 // ── Delete tab ────────────────────────────────────────────────────────────────
@@ -759,6 +943,8 @@ function deleteCurrentTab() {
     setStatus('Click "+ Add Date" to begin.');
   }
   updateStats();
+  refreshVisibleRowStatuses();
+  renderCachedIssues();
 }
 
 // ── Prepare File ──────────────────────────────────────────────────────────────
@@ -766,64 +952,55 @@ async function prepareFile() {
   if (processing) return;
   saveTab();
 
-  const users = new Set();
-  for (const d of Object.values(data)) d.usernames.forEach(u => { if (u.trim()) users.add(u.trim()); });
-  if (!users.size) { setStatus('No usernames entered.', 'err'); return; }
+  const users = [];
+  const seen = new Set();
+  for (const d of Object.values(data)) {
+    d.usernames.forEach(u => {
+      const username = u.trim();
+      const key = usernameKey(username);
+      if (key && !seen.has(key)) {
+        seen.add(key);
+        users.push(username);
+      }
+    });
+  }
+  if (!users.length) { setStatus('No usernames entered.', 'err'); return; }
 
   processing = true;
   $('btnPrep').disabled = true;
-  $('btnPrep').textContent = 'Checking…';
+  $('btnPrep').textContent = 'Preparing...';
   $('exportBtns').innerHTML = '';
 
   const userMap = {};
   const issues  = [];
-  let done = 0;
+  const pending = users
+    .map(username => eligibilityCache[usernameKey(username)])
+    .filter(item => item?.status === 'pending' && item.promise)
+    .map(item => item.promise.catch(() => null));
+  if (pending.length) {
+    setStatus(`Finishing ${pending.length} live eligibility check${pending.length === 1 ? '' : 's'}...`);
+    await Promise.allSettled(pending);
+  }
 
   for (const username of users) {
-    setStatus(`Checking ${++done} / ${users.size}: ${username}`);
-    try {
-      const idRes = await callProxy('userid', { username });
-      if (idRes.error === 'not_found') {
-        issues.push({ type: 'err', username, msg: 'Not found on Roblox' });
-        await sleep(400); continue;
-      }
-      if (idRes.error === 'RATE_LIMITED') {
-        issues.push({ type: 'err', username, msg: 'Rate limited — retry in ~60s' });
-        await sleep(1000); continue;
-      }
-      if (idRes.error) {
-        issues.push({ type: 'err', username, msg: idRes.error });
-        await sleep(400); continue;
-      }
-
-      await sleep(600);
-
-      const memRes = await callProxy('membership', null, `user_id=${idRes.id}`);
-      if (memRes.error === 'not_joined') {
-        issues.push({ type: 'err', username, msg: 'Not joined' });
-        await sleep(400); continue;
-      }
-      if (memRes.error === 'RATE_LIMITED') {
-        issues.push({ type: 'err', username, msg: 'Rate limited — retry in ~60s' });
-        await sleep(1000); continue;
-      }
-      if (memRes.error) {
-        issues.push({ type: 'err', username, msg: memRes.error });
-        await sleep(400); continue;
-      }
-
-      userMap[username.toLowerCase()] = {
-        id: idRes.id,
-        isEligible:   memRes.isEligible,
-        eligibleDate: memRes.eligibleDate,
-      };
-      if (!memRes.isEligible) {
-        issues.push({ type: 'warn', username, msg: `Eligible on ${memRes.eligibleDate}` });
-      }
-    } catch {
-      issues.push({ type: 'err', username, msg: 'Request failed' });
+    const key = usernameKey(username);
+    const entry = eligibilityCache[key];
+    if (!entry || entry.status === 'pending') {
+      issues.push({ type: 'err', username, msg: 'Not checked yet' });
+      continue;
     }
-    await sleep(400);
+    if (entry.status === 'err') {
+      issues.push({ type: 'err', username: entry.username || username, msg: entry.msg || 'Eligibility issue' });
+      continue;
+    }
+    userMap[key] = {
+      id: entry.id,
+      isEligible: entry.status === 'ok',
+      eligibleDate: entry.eligibleDate,
+    };
+    if (entry.status === 'warn') {
+      issues.push({ type: 'warn', username: entry.username || username, msg: entry.msg || `Eligible on ${entry.eligibleDate}` });
+    }
   }
 
   // Build ordered CSV rows (exclude error users, include ineligible)
@@ -832,7 +1009,7 @@ async function prepareFile() {
     for (let i = 0; i < MAX; i++) {
       const u = d.usernames[i]?.trim();
       if (!u) continue;
-      const entry = userMap[u.toLowerCase()];
+      const entry = userMap[usernameKey(u)];
       if (entry) {
         csvRows.push({ date: label, username: u, id: entry.id, robux: d.robux[i] || '' });
       }
