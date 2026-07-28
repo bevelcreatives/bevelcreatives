@@ -462,3 +462,180 @@ canvas { width: 100% !important; height: 280px !important; }
   .topbar { padding: 0 16px; }
   .content { padding: 16px; }
 }
+
+/* ─── Orders split-panel layout ──────────────────────────────────────── */
+
+/*
+  .orders-split is a flex row.
+  Left panel (.orders-panel-left) holds the table.
+  Right panel (.orders-panel-right) slides in when an order is selected.
+  When the panel is closed, left panel is full-width.
+  When open, left gets ~55% and right gets ~45%, with a smooth transition.
+*/
+
+.orders-split {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  min-height: 0;
+}
+
+/* Left panel — table */
+.orders-panel-left {
+  flex: 1 1 100%;
+  min-width: 0;
+  transition: flex-basis 0.22s ease, max-width 0.22s ease;
+}
+
+.orders-split.panel-open .orders-panel-left {
+  flex: 0 0 54%;
+  max-width: 54%;
+}
+
+/* Keep the orders card from breaking out */
+.orders-card {
+  width: 100%;
+}
+
+/* Right panel — detail */
+.orders-panel-right {
+  flex: 0 0 44%;
+  max-width: 44%;
+  position: sticky;
+  top: 84px; /* topbar height (64) + 20px breathing room */
+  max-height: calc(100vh - 104px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.orders-panel-right[hidden] {
+  display: none;
+}
+
+/* The detail panel card itself */
+.detail-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: calc(100vh - 104px);
+  overflow: hidden;
+}
+
+/* Panel header — fixed at top of panel */
+.detail-panel-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  background: var(--bg-elev);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.detail-panel-title {
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.detail-panel-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.1s;
+}
+.detail-panel-close:hover { color: var(--text); }
+
+/* Panel scrollable body */
+.detail-panel-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Section label above screenshot */
+.detail-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin: 18px 0 8px;
+}
+
+/* Active / selected row highlight in the table */
+.data-table tbody tr.active-row {
+  background: var(--accent-soft) !important;
+  border-left: 3px solid var(--accent);
+}
+.data-table tbody tr.active-row td:first-child {
+  padding-left: 13px; /* compensate for the 3px left border */
+}
+
+/* Order # column — narrower, de-emphasised */
+.col-order-num {
+  width: 52px;
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+/* When panel is open, hide less important columns on smaller screens
+   to keep the table readable in its narrower space */
+@media (max-width: 1300px) {
+  .orders-split.panel-open .data-table th:nth-child(4),
+  .orders-split.panel-open .data-table td:nth-child(4) {
+    display: none; /* hide Discord column */
+  }
+}
+
+@media (max-width: 1100px) {
+  .orders-split.panel-open .data-table th:nth-child(1),
+  .orders-split.panel-open .data-table td:nth-child(1) {
+    display: none; /* hide Date/Time column */
+  }
+}
+
+/* ─── Dark mode overrides for split panel ──────────────────── */
+[data-theme="dark"] .data-table tbody tr.active-row {
+  background: rgba(11, 110, 79, 0.18) !important;
+}
+
+[data-theme="dark"] .detail-panel-head {
+  background: var(--bg-elev);
+}
+
+/* ─── Responsive: stack vertically on small screens ─────────── */
+@media (max-width: 900px) {
+  .orders-split {
+    flex-direction: column;
+  }
+
+  .orders-split.panel-open .orders-panel-left {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .orders-panel-right {
+    flex: 1 1 100%;
+    max-width: 100%;
+    position: relative;
+    top: 0;
+    max-height: none;
+  }
+
+  .detail-panel {
+    max-height: none;
+  }
+}

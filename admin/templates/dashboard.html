@@ -7,71 +7,85 @@
 {% endblock %}
 
 {% block content %}
-<div class="card">
-  <div class="filters" id="filters">
-    <div class="filter-row">
-      <label class="filter filter-search">
-        <span class="filter-label">Search</span>
-        <input id="f-q" type="text" placeholder="Roblox username / display name, Discord username, ID, amount, order #"/>
-      </label>
-      <label class="filter">
-        <span class="filter-label">Status</span>
-        <select id="f-status">
-          <option value="">All</option>
-          {% for s in statuses %}
-            <option value="{{ s }}">{{ status_labels[s] }}</option>
-          {% endfor %}
-        </select>
-      </label>
-      <label class="filter">
-        <span class="filter-label">From</span>
-        <input id="f-from" type="date"/>
-      </label>
-      <label class="filter">
-        <span class="filter-label">To</span>
-        <input id="f-to" type="date"/>
-      </label>
-      <button id="f-clear" class="btn btn-ghost btn-compact">Clear Data</button>
-      <button id="verify-btn" class="btn btn-compact" disabled style="margin-left:auto">Verify Selected (<span id="verify-count">0</span>)</button>
+
+<!-- Split-panel layout wrapper -->
+<div class="orders-split" id="orders-split">
+
+  <!-- LEFT: table panel -->
+  <div class="orders-panel-left" id="orders-panel-left">
+    <div class="card orders-card">
+      <div class="filters" id="filters">
+        <div class="filter-row">
+          <label class="filter filter-search">
+            <span class="filter-label">Search</span>
+            <input id="f-q" type="text" placeholder="Roblox username, Discord username, ID, amount, order #"/>
+          </label>
+          <label class="filter">
+            <span class="filter-label">Status</span>
+            <select id="f-status">
+              <option value="">All</option>
+              {% for s in statuses %}
+                <option value="{{ s }}">{{ status_labels[s] }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label class="filter">
+            <span class="filter-label">From</span>
+            <input id="f-from" type="date"/>
+          </label>
+          <label class="filter">
+            <span class="filter-label">To</span>
+            <input id="f-to" type="date"/>
+          </label>
+          <button id="f-clear" class="btn btn-ghost btn-compact">Clear Data</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table" id="orders-table">
+          <thead>
+            <tr>
+              <th>Date &amp; Time</th>
+              <th>Roblox</th>
+              <th class="num">Amount</th>
+              <th>Discord</th>
+              <th>Status</th>
+              <th class="col-order-num">#</th>
+            </tr>
+          </thead>
+          <tbody id="orders-body">
+            <tr><td colspan="6" class="muted muted-center">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-foot">
+        <span id="orders-count" class="muted">—</span>
+      </div>
     </div>
   </div>
 
-  <div class="table-wrap">
-    <table class="data-table" id="orders-table">
-      <thead>
-        <tr>
-          <th class="sel-col"><input type="checkbox" id="sel-all" title="Select all visible"></th>
-          <th>Date &amp; Time</th>
-          <th>Roblox</th>
-          <th class="num">Amount</th>
-          <th>Discord</th>
-          <th>Status</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="orders-body">
-        <tr><td colspan="6" class="muted">Loading…</td></tr>
-      </tbody>
-    </table>
-  </div>
+  <!-- RIGHT: detail panel (hidden until a row is clicked) -->
+  <div class="orders-panel-right" id="orders-panel-right" hidden>
+    <div class="detail-panel card">
 
-  <div class="table-foot">
-    <span id="orders-count" class="muted">—</span>
-  </div>
-</div>
+      <!-- Panel header -->
+      <div class="detail-panel-head">
+        <div id="detail-title" class="detail-panel-title">Order</div>
+        <button class="btn-close detail-panel-close" id="detail-close" title="Close">&times;</button>
+      </div>
 
-<!-- Detail modal -->
-<div class="modal" id="detail-modal" hidden>
-  <div class="modal-backdrop" data-close></div>
-  <div class="modal-card">
-    <div class="modal-head">
-      <div id="detail-title" class="modal-title">Order</div>
-      <button class="btn-close" data-close>&times;</button>
+      <!-- Panel scrollable body -->
+      <div class="detail-panel-body" id="detail-body">
+        <div class="muted muted-center">Select an order to view details.</div>
+      </div>
+
     </div>
-    <div id="detail-body" class="modal-body">Loading…</div>
   </div>
-</div>
 
+</div><!-- /.orders-split -->
+
+<!-- Clear data modal (unchanged) -->
 <div class="modal" id="clear-modal" hidden>
   <div class="modal-backdrop" data-clear-close></div>
   <div class="modal-card">
@@ -89,31 +103,7 @@
     </div>
   </div>
 </div>
-<div class="modal" id="verify-modal" hidden>
-  <div class="modal-backdrop" data-verify-close></div>
-  <div class="modal-card">
-    <div class="modal-head">
-      <div class="modal-title" id="verify-modal-title">Verify Selected Orders</div>
-      <button class="btn-close" data-verify-close>&times;</button>
-    </div>
-    <div class="modal-body">
-      <div id="verify-body">
-        <p id="verify-summary"></p>
-        <ul id="verify-list" style="margin:8px 0 14px;padding-left:18px;max-height:220px;overflow-y:auto;font-size:0.9em;"></ul>
-        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
-          <button class="btn btn-ghost btn-compact" data-verify-close>Cancel</button>
-          <button id="verify-confirm" class="btn btn-compact">Complete All</button>
-        </div>
-      </div>
-      <div id="verify-result" hidden>
-        <ul id="verify-result-list" style="margin:8px 0 14px;padding-left:18px;max-height:260px;overflow-y:auto;font-size:0.9em;"></ul>
-        <div style="display:flex;justify-content:flex-end;margin-top:14px;">
-          <button class="btn btn-ghost btn-compact" data-verify-close>Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+
 {% endblock %}
 
 {% block scripts %}
