@@ -35,6 +35,12 @@
         <a href="{{ url_for('leaderboard_page') }}" class="nav-link {% if request.endpoint == 'leaderboard_page' %}active{% endif %}">
           <span class="nav-ic">⬆</span> Leaderboard
         </a>
+        <a href="{{ url_for('settings_page') }}" class="nav-link {% if request.endpoint == 'settings_page' %}active{% endif %}">
+          <span class="nav-ic">⚙</span> Settings
+        </a>
+        <button id="bulk-complete-btn" type="button" class="btn btn-primary nav-complete-btn" hidden>
+          <span class="nav-ic">✓</span> Complete <span id="bulk-complete-count" class="nav-complete-count"></span>
+        </button>
       </nav>
       <div class="sidebar-foot">
         <div class="user-chip">

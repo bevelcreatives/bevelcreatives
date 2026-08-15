@@ -81,6 +81,25 @@ body {
 }
 .nav-link:hover { background: rgba(255,255,255,0.05); }
 .nav-link.active { background: rgba(11, 110, 79, 0.22); color: #fff; }
+
+.nav-complete-btn {
+  width: 100%;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+  height: auto;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.nav-complete-btn[hidden] { display: none; }
+.nav-complete-count {
+  background: rgba(255,255,255,0.25);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
 .nav-ic { font-size: 16px; opacity: 0.85; }
 
 .sidebar-foot { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
@@ -452,6 +471,116 @@ canvas { width: 100% !important; height: 280px !important; }
 /* Stat cards */
 [data-theme="dark"] .stat-card { background: var(--bg-elev); }
 
+/* Settings page */
+[data-theme="dark"] .settings-field select,
+[data-theme="dark"] .settings-field input,
+[data-theme="dark"] .settings-field textarea,
+[data-theme="dark"] .dm-add-row input,
+[data-theme="dark"] .dm-add-row textarea { background: #21262d; color: var(--text); }
+[data-theme="dark"] .file-upload:hover { color: var(--accent); }
+[data-theme="dark"] .dm-rule-row { border-color: var(--border); }
+
+/* ─── Settings page ──────────────────────────── */
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.settings-card {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.settings-card-wide { grid-column: 1 / -1; }
+.settings-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.settings-field { display: flex; flex-direction: column; gap: 5px; }
+.settings-field-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+.settings-field select,
+.settings-field input[type="text"],
+.settings-field textarea {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  width: 100%;
+  transition: border-color .1s, box-shadow .1s;
+}
+.settings-field textarea { min-height: 72px; resize: vertical; font-family: inherit; }
+.settings-field select:focus,
+.settings-field input:focus,
+.settings-field textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* Checkbox group (Eligibility Groups, etc.) */
+.checkbox-group { display: flex; flex-direction: column; gap: 6px; }
+.checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+.checkbox-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); }
+
+/* File upload */
+.file-upload {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+  transition: border-color .1s, color .1s;
+  width: fit-content;
+}
+.file-upload:hover { border-color: var(--accent); color: var(--accent-hover); }
+.file-upload input[type="file"] { display: none; }
+
+/* Inline field-save status */
+.field-status { font-size: 12px; min-height: 16px; display: block; }
+.field-status-saving { color: var(--text-muted); }
+.field-status-saved  { color: var(--good); }
+.field-status-error  { color: var(--bad); }
+
+/* Scheduled DMs card */
+.dm-rules-list { display: flex; flex-direction: column; gap: 8px; }
+.dm-rule-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  flex-wrap: wrap;
+}
+.dm-rule-main { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 13px; }
+.dm-rule-msg { color: var(--text-muted); max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dm-rule-actions { display: flex; align-items: center; gap: 10px; }
+.dm-rule-toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); cursor: pointer; }
+.dm-rule-toggle input { accent-color: var(--accent); cursor: pointer; }
+.dm-add-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr auto;
+  gap: 10px;
+  align-items: start;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+}
+.dm-add-row input, .dm-add-row textarea {
+  font: inherit; padding: 8px 10px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); background: #fff; color: var(--text); outline: none;
+}
+.dm-add-row textarea { min-height: 38px; resize: vertical; }
+.dm-add-row .field-status { grid-column: 1 / -1; }
+
+@media (max-width: 700px) {
+  .dm-add-row { grid-template-columns: 1fr; }
+}
+
 /* ─── Responsive ─────────────────────────────── */
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
@@ -590,6 +719,16 @@ canvas { width: 100% !important; height: 280px !important; }
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
 }
+
+.th-check, .td-check { width: 36px; text-align: center; padding-left: 4px; padding-right: 4px; }
+.td-check input[type="checkbox"] {
+  width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent);
+  vertical-align: middle;
+}
+.bulk-result-list { list-style: none; padding: 0; margin: 8px 0 0; font-size: 13px; }
+.bulk-result-list li { padding: 4px 0; display: flex; justify-content: space-between; gap: 12px; }
+.bulk-result-ok  { color: var(--good); }
+.bulk-result-bad { color: var(--bad); }
 
 /* When panel is open, hide less important columns on smaller screens
    to keep the table readable in its narrower space */

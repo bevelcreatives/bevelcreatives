@@ -152,6 +152,12 @@ def leaderboard_page():
     return render_template("leaderboard.html")
 
 
+@app.route("/settings")
+@login_required
+def settings_page():
+    return render_template("settings.html")
+
+
 # â"€â"€â"€â"€â"€â"€â"€â"€â"€ JSON API â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @app.route("/api/orders")
 @login_required
@@ -358,6 +364,198 @@ def api_bulk_complete():
 
 
 # â"€â"€â"€â"€â"€â"€â"€â"€â"€ XLSX export â"€â"€â"€â"€â"€â"€â"€â"€â"€
+def _kv_raw(cmd):
+    if not _KV_URL or not _KV_TOKEN:
+        return None
+    try:
+        resp = _requests.post(_KV_URL, json=cmd,
+                              headers={"Authorization": f"Bearer {_KV_TOKEN}"}, timeout=10)
+        return resp.json()
+    except Exception:
+        return None
+
+def _kv_get(key: str):
+    result = _kv_raw(["GET", key])
+    return result.get("result") if result else None
+
+def _kv_set(key: str, value: str):
+    _kv_raw(["SET", key, value])
+
+def _kv_del(key: str):
+    _kv_raw(["DEL", key])
+
+def _kv_relay(cmd_key: str, result_key: str, payload: dict, timeout_s: int = 90):
+    """Shared write+poll helper for the bot command-relay pattern, extracted
+    from api_bulk_complete so every Settings write endpoint below doesn't
+    repeat the same ts/poll/cleanup logic."""
+    if not _KV_URL or not _KV_TOKEN:
+        return jsonify({"error": "kv_not_configured"}), 503
+
+    ts = int(_time.time() * 1000)
+    cmd = json.dumps(dict(payload, ts=ts))
+
+    try:
+        _kv_set(cmd_key, cmd)
+    except Exception as exc:
+        return jsonify({"error": "kv_write_failed", "message": str(exc)}), 502
+
+    deadline = _time.time() + timeout_s
+    while _time.time() < deadline:
+        _time.sleep(2)
+        raw = _kv_get(result_key)
+        if raw:
+            try:
+                result = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+            if result.get("ts") == ts:
+                _kv_del(result_key)
+                return jsonify(result), 200
+
+    try:
+        _kv_del(cmd_key)
+    except Exception:
+        pass
+    return jsonify({"error": "timeout",
+                    "message": "Bot did not respond within 90 s. Is it running?"}), 504
+
+
+@app.route("/api/settings", methods=["GET"])
+@login_required
+def api_settings_get():
+    ticket_config = {}
+    ticket_raw = _kv_get("ticket_data")
+    if ticket_raw:
+        try:
+            ticket_config = json.loads(ticket_raw).get("server_config", {})
+        except (json.JSONDecodeError, TypeError, AttributeError):
+            pass
+
+    util_config = {}
+    util_raw = _kv_get("bot_config_snapshot")
+    if util_raw:
+        try:
+            util_config = json.loads(util_raw)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    scheduled_dms = []
+    dms_raw = _kv_get("scheduled_dms_snapshot")
+    if dms_raw:
+        try:
+            scheduled_dms = json.loads(dms_raw)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    guild_structure = {"channels": [], "categories": [], "roles": []}
+    gs_raw = _kv_get("guild_structure")
+    if gs_raw:
+        try:
+            guild_structure = json.loads(gs_raw)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    return jsonify({
+        "ticket_config":   ticket_config,
+        "util_config":     util_config,
+        "scheduled_dms":   scheduled_dms,
+        "guild_structure": guild_structure,
+        "kv_configured":   bool(_KV_URL and _KV_TOKEN),
+    })
+
+
+@app.route("/api/settings/ticket-field", methods=["POST"])
+@login_required
+def api_settings_ticket_field():
+    payload = request.get_json(silent=True) or {}
+    key = payload.get("key")
+    if not key:
+        return jsonify({"error": "missing_key"}), 400
+    return _kv_relay("settings_cmd_ticket", "settings_result_ticket",
+                      {"kind": "field", "key": key, "value": payload.get("value")})
+
+
+@app.route("/api/settings/util-field", methods=["POST"])
+@login_required
+def api_settings_util_field():
+    payload = request.get_json(silent=True) or {}
+    key = payload.get("key")
+    if not key:
+        return jsonify({"error": "missing_key"}), 400
+    return _kv_relay("settings_cmd_util", "settings_result_util",
+                      {"kind": "text_field", "key": key, "value": payload.get("value")})
+
+
+@app.route("/api/settings/dm-rule", methods=["POST"])
+@login_required
+def api_settings_dm_rule():
+    payload = request.get_json(silent=True) or {}
+    action = payload.get("action")
+    if action not in ("create", "update", "delete", "toggle"):
+        return jsonify({"error": "invalid_action"}), 400
+    cmd = {"kind": "dm_rule", "action": action}
+    for f in ("rule_id", "user_id", "time", "message"):
+        if f in payload:
+            cmd[f] = payload[f]
+    return _kv_relay("settings_cmd_util", "settings_result_util", cmd)
+
+
+# Flask-side copy of the bot's own image-slot allow-list - defence in depth
+# only (rejects typos/garbage early with a clean error); the bot's own fixed
+# slot->path dict is the real security boundary, since it never reads a path
+# from any payload.
+_TICKET_IMAGE_SLOTS = {"ticket_qr", "ticket_bank_qr", "ticket_open_gif", "drops_gif", "ty_gif"}
+_UTIL_IMAGE_SLOTS   = {"util_qr", "util_bank_qr"}
+_IMAGE_SLOT_CONTENT_TYPES = {
+    "ticket_qr": "image/png", "ticket_bank_qr": "image/png",
+    "ticket_open_gif": "image/gif", "drops_gif": "image/gif", "ty_gif": "image/gif",
+    "util_qr": "image/png", "util_bank_qr": "image/png",
+}
+_MAX_IMAGE_UPLOAD_BYTES = 8 * 1024 * 1024  # matches Discord's own non-Nitro attachment cap
+
+def _handle_image_upload(allowed_slots: set):
+    payload  = request.get_json(silent=True) or {}
+    slot     = payload.get("slot")
+    data_b64 = payload.get("data")
+    if slot not in allowed_slots:
+        return jsonify({"error": "unknown_slot"}), 400
+    if not data_b64:
+        return jsonify({"error": "missing_data"}), 400
+    expected_type = _IMAGE_SLOT_CONTENT_TYPES[slot]
+    content_type  = payload.get("content_type", "")
+    if content_type and content_type != expected_type:
+        return jsonify({"error": "wrong_type", "message": f"Expected {expected_type}."}), 400
+    try:
+        raw = base64.b64decode(data_b64, validate=True)
+    except Exception:
+        return jsonify({"error": "invalid_base64"}), 400
+    if len(raw) > _MAX_IMAGE_UPLOAD_BYTES:
+        return jsonify({"error": "too_large", "message": "Max 8MB."}), 400
+    if not _KV_URL or not _KV_TOKEN:
+        return jsonify({"error": "kv_not_configured"}), 503
+    ts = str(int(_time.time() * 1000))
+    try:
+        _kv_set(f"image:{slot}", data_b64)
+        _kv_set(f"image:{slot}:updated_at", ts)
+    except Exception as exc:
+        return jsonify({"error": "kv_write_failed", "message": str(exc)}), 502
+    # No relay/poll wait here on purpose - large uploads shouldn't block on a
+    # bot round-trip; the bot's image_sync_loop picks this up within ~20s.
+    return jsonify({"ok": True, "slot": slot, "updated_at": ts})
+
+
+@app.route("/api/settings/ticket-image", methods=["POST"])
+@login_required
+def api_settings_ticket_image():
+    return _handle_image_upload(_TICKET_IMAGE_SLOTS)
+
+
+@app.route("/api/settings/util-image", methods=["POST"])
+@login_required
+def api_settings_util_image():
+    return _handle_image_upload(_UTIL_IMAGE_SLOTS)
+
+
 def _require_openpyxl():
     if not HAS_OPENPYXL:
         abort(500, description="openpyxl is not installed on the server.")

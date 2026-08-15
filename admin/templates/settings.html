@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div id="settings-kv-warning" class="empty" hidden>
+  KV isn't configured on this deployment - Settings can't read from or write to the bot. Check
+  <code>KV_REST_API_URL</code>/<code>KV_REST_API_TOKEN</code>.
+</div>
+
+<div class="settings-grid" id="settings-grid">
+
+  <!-- 1: Ticket Channels & Category -->
+  <div class="card settings-card">
+    <div class="settings-card-title">Ticket Channels &amp; Category</div>
+    <label class="settings-field">
+      <span class="settings-field-label">Audit Log Channel</span>
+      <select data-domain="ticket" data-key="log_channel_id" data-kind="channel"></select>
+      <span class="field-status" data-status-for="log_channel_id"></span>
+    </label>
+    <label class="settings-field">
+      <span class="settings-field-label">Completed Orders Channel</span>
+      <select data-domain="ticket" data-key="completed_channel_id" data-kind="channel"></select>
+      <span class="field-status" data-status-for="completed_channel_id"></span>
+    </label>
+    <label class="settings-field">
+      <span class="settings-field-label">Ticket Category 1</span>
+      <select data-domain="ticket" data-key="ticket_category_1_id" data-kind="category"></select>
+      <span class="field-status" data-status-for="ticket_category_1_id"></span>
+    </label>
+  </div>
+
+  <!-- 2: Roles -->
+  <div class="card settings-card">
+    <div class="settings-card-title">Roles</div>
+    <label class="settings-field">
+      <span class="settings-field-label">Customer Role</span>
+      <select data-domain="ticket" data-key="customer_role_id" data-kind="role"></select>
+      <span class="field-status" data-status-for="customer_role_id"></span>
+    </label>
+    <label class="settings-field">
+      <span class="settings-field-label">Payout Role</span>
+      <select data-domain="ticket" data-key="payout_role_id" data-kind="role"></select>
+      <span class="field-status" data-status-for="payout_role_id"></span>
+    </label>
+  </div>
+
+  <!-- 3: Storefront Channels -->
+  <div class="card settings-card">
+    <div class="settings-card-title">Storefront Channels</div>
+    <label class="settings-field">
+      <span class="settings-field-label">Stock Channel</span>
+      <select data-domain="ticket" data-key="stock_channel_id" data-kind="channel"></select>
+      <span class="field-status" data-status-for="stock_channel_id"></span>
+    </label>
+    <label class="settings-field">
+      <span class="settings-field-label">Info Channel</span>
+      <select data-domain="ticket" data-key="info_channel_id" data-kind="channel"></select>
+      <span class="field-status" data-status-for="info_channel_id"></span>
+    </label>
+    <label class="settings-field">
+      <span class="settings-field-label">Terms of Service Channel</span>
+      <select data-domain="ticket" data-key="tos_channel_id" data-kind="channel"></select>
+      <span class="field-status" data-status-for="tos_channel_id"></span>
+    </label>
+  </div>
+
+  <!-- 4: Payments -->
+  <div class="card settings-card">
+    <div class="settings-card-title">Payments</div>
+    <label class="settings-field">
+      <span class="settings-field-label">Active Payment QR</span>
+      <select data-domain="ticket" data-key="qr_image" data-kind="choice">
+        <option value="QR.png">QR.png</option>
+        <option value="bank_QR.png">bank_QR.png</option>
+      </select>
+      <span class="field-status" data-status-for="qr_image"></span>
+    </label>
+    <label class="settings-field">
+      <span class="settings-field-label">Payment Number</span>
+      <input type="text" data-domain="ticket" data-key="payment_number" data-kind="text"/>
+      <span class="field-status" data-status-for="payment_number"></span>
+    </label>
+    <div class="settings-field">
+      <span class="settings-field-label">Payment QR Image</span>
+      <label class="file-upload">
+        <input type="file" accept="image/png" data-domain="ticket" data-slot="ticket_qr" data-endpoint="ticket-image"/>
+        <span>Replace image (PNG)</span>
+      </label>
+      <span class="field-status" data-status-for="img:ticket_qr"></span>
+    </div>
+    <div class="settings-field">
+      <span class="settings-field-label">Bank QR Image</span>
+      <label class="file-upload">
+        <input type="file" accept="image/png" data-domain="ticket" data-slot="ticket_bank_qr" data-endpoint="ticket-image"/>
+        <span>Replace image (PNG)</span>
+      </label>
+      <span class="field-status" data-status-for="img:ticket_bank_qr"></span>
+    </div>
+  </div>
+
+  <!-- 5: Auto-Close & Eligibility -->
+  <div class="card settings-card">
+    <div class="settings-card-title">Auto-Close &amp; Eligibility</div>
+    <label class="settings-field">
+      <span class="settings-field-label">Auto-Close Timer (hours)</span>
+      <input type="text" data-domain="ticket" data-key="auto_close_hours" data-kind="text"/>
+      <span class="field-status" data-status-for="auto_close_hours"></span>
+    </label>
+    <div class="settings-field">
+      <span class="settings-field-label">Eligibility Groups</span>
+      <div class="checkbox-group" data-domain="ticket" data-key="enabled_groups" data-kind="groups">
+        <label class="checkbox-row"><input type="checkbox" value="g1"/> B's Base</label>
+        <label class="checkbox-row"><input type="checkbox" value="g2"/> Compound Creations</label>
+        <label class="checkbox-row"><input type="checkbox" value="g3"/> Bevel Creatives</label>
+      </div>
+      <span class="field-status" data-status-for="enabled_groups"></span>
+    </div>
+  </div>
+
+  <!-- 6: Drops Announcements -->
+  <div class="card settings-card">
+    <div class="settings-card-title">Drops Announcements</div>
+    <label class="settings-field">
+      <span class="settings-field-label">Drops Channel</span>
+      <select data-domain="ticket" data-key="drops_channel_id" data-kind="channel"></select>
+      <span class="field-status" data-status-for="drops_channel_id"></span>
+    </label>
+    <div class="settings-field">
+      <span class="settings-field-label">Drops GIF</span>
+      <label class="file-upload">
+        <input type="file" accept="image/gif" data-domain="ticket" data-slot="drops_gif" data-endpoint="ticket-image"/>
+        <span>Replace GIF</span>
+      </label>
+      <span class="field-status" data-status-for="img:drops_gif"></span>
+    </div>
+  </div>
+
+  <!-- 7: Media & GIFs -->
+  <div class="card settings-card">
+    <div class="settings-card-title">Media &amp; GIFs</div>
+    <div class="settings-field">
+      <span class="settings-field-label">Ticket-Open GIF</span>
+      <label class="file-upload">
+        <input type="file" accept="image/gif" data-domain="ticket" data-slot="ticket_open_gif" data-endpoint="ticket-image"/>
+        <span>Replace GIF</span>
+      </label>
+      <span class="field-status" data-status-for="img:ticket_open_gif"></span>
+    </div>
+    <div class="settings-field">
+      <span class="settings-field-label">Thank-You GIF</span>
+      <label class="file-upload">
+        <input type="file" accept="image/gif" data-domain="ticket" data-slot="ty_gif" data-endpoint="ticket-image"/>
+        <span>Replace GIF</span>
+      </label>
+      <span class="field-status" data-status-for="img:ty_gif"></span>
+    </div>
+  </div>
+
+  <!-- 8-12: utility bot text commands -->
+  <div class="card settings-card">
+    <div class="settings-card-title">/com Command</div>
+    <label class="settings-field">
+      <span class="settings-field-label">Output Text</span>
+      <textarea data-domain="util" data-key="com_text" data-kind="text_field"></textarea>
+      <span class="field-status" data-status-for="com_text"></span>
+    </label>
+  </div>
+
+  <div class="card settings-card">
+    <div class="settings-card-title">/how Command</div>
+    <label class="settings-field">
+      <span class="settings-field-label">Output Text</span>
+      <textarea data-domain="util" data-key="how_text" data-kind="text_field"></textarea>
+      <span class="field-status" data-status-for="how_text"></span>
+    </label>
+  </div>
+
+  <div class="card settings-card">
+    <div class="settings-card-title">/buy Command</div>
+    <label class="settings-field">
+      <span class="settings-field-label">Output Text</span>
+      <textarea data-domain="util" data-key="buy_text" data-kind="text_field"></textarea>
+      <span class="field-status" data-status-for="buy_text"></span>
+    </label>
+  </div>
+
+  <div class="card settings-card">
+    <div class="settings-card-title">/proof Command</div>
+    <label class="settings-field">
+      <span class="settings-field-label">Output Text</span>
+      <textarea data-domain="util" data-key="proof_text" data-kind="text_field"></textarea>
+      <span class="field-status" data-status-for="proof_text"></span>
+    </label>
+  </div>
+
+  <div class="card settings-card">
+    <div class="settings-card-title">/stock Command</div>
+    <label class="settings-field">
+      <span class="settings-field-label">Output Text</span>
+      <textarea data-domain="util" data-key="stock_text" data-kind="text_field"></textarea>
+      <span class="field-status" data-status-for="stock_text"></span>
+    </label>
+  </div>
+
+  <!-- 13: /qr -->
+  <div class="card settings-card">
+    <div class="settings-card-title">/qr Command</div>
+    <label class="settings-field">
+      <span class="settings-field-label">Caption</span>
+      <textarea data-domain="util" data-key="qr_text" data-kind="text_field"></textarea>
+      <span class="field-status" data-status-for="qr_text"></span>
+    </label>
+    <div class="settings-field">
+      <span class="settings-field-label">QR Image</span>
+      <label class="file-upload">
+        <input type="file" accept="image/png" data-domain="util" data-slot="util_qr" data-endpoint="util-image"/>
+        <span>Replace image (PNG)</span>
+      </label>
+      <span class="field-status" data-status-for="img:util_qr"></span>
+    </div>
+  </div>
+
+  <!-- 14: /bankqr -->
+  <div class="card settings-card">
+    <div class="settings-card-title">/bankqr Command</div>
+    <label class="settings-field">
+      <span class="settings-field-label">Caption</span>
+      <textarea data-domain="util" data-key="bankqr_text" data-kind="text_field"></textarea>
+      <span class="field-status" data-status-for="bankqr_text"></span>
+    </label>
+    <div class="settings-field">
+      <span class="settings-field-label">Bank QR Image</span>
+      <label class="file-upload">
+        <input type="file" accept="image/png" data-domain="util" data-slot="util_bank_qr" data-endpoint="util-image"/>
+        <span>Replace image (PNG)</span>
+      </label>
+      <span class="field-status" data-status-for="img:util_bank_qr"></span>
+    </div>
+  </div>
+
+  <!-- 15: Scheduled DMs (wide) -->
+  <div class="card settings-card settings-card-wide">
+    <div class="settings-card-title">Scheduled DMs</div>
+    <div id="dm-rules-list" class="dm-rules-list">
+      <div class="muted muted-center">Loading…</div>
+    </div>
+    <div class="dm-add-row">
+      <input type="text" id="dm-add-user" placeholder="Discord User ID"/>
+      <input type="text" id="dm-add-time" placeholder="HH:MM (24h, NPT)" maxlength="5"/>
+      <textarea id="dm-add-message" placeholder="Message"></textarea>
+      <button id="dm-add-btn" class="btn btn-primary btn-compact">Add Rule</button>
+      <span class="field-status" data-status-for="dm-add"></span>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+{% endblock %}
