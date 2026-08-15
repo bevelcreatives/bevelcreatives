@@ -34,24 +34,50 @@
   <div class="stat-card"><div class="stat-label">Cancelled</div><div class="stat-value bad" id="u-total-cancelled">—</div></div>
 </div>
 
-<div class="card" id="user-orders-card" hidden>
-  <div class="table-wrap">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Date &amp; Time</th>
-          <th>Roblox</th>
-          <th class="num">Amount</th>
-          <th>Discord</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="user-orders-body"></tbody>
-    </table>
-  </div>
-</div>
+<!-- Split-panel layout wrapper (same pattern as the Orders page) -->
+<div class="orders-split" id="user-split">
 
-<div id="user-empty" class="empty" hidden>No matching orders.</div>
+  <!-- LEFT: table panel -->
+  <div class="orders-panel-left" id="user-panel-left">
+    <div class="card orders-card" id="user-orders-card" hidden>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date &amp; Time</th>
+              <th>Roblox</th>
+              <th class="num">Amount</th>
+              <th>Discord</th>
+              <th>Status</th>
+              <th class="col-order-num">#</th>
+            </tr>
+          </thead>
+          <tbody id="user-orders-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="user-empty" class="empty" hidden>No matching orders.</div>
+  </div>
+
+  <!-- RIGHT: detail panel (hidden until a row is clicked) -->
+  <div class="orders-panel-right" id="user-panel-right" hidden>
+    <div class="detail-panel card">
+
+      <!-- Panel header -->
+      <div class="detail-panel-head">
+        <div id="user-detail-title" class="detail-panel-title">Order</div>
+        <button class="btn-close detail-panel-close" id="user-detail-close" title="Close">&times;</button>
+      </div>
+
+      <!-- Panel scrollable body -->
+      <div class="detail-panel-body" id="user-detail-body">
+        <div class="muted muted-center">Select an order to view details.</div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /.orders-split -->
 {% endblock %}
 
 {% block scripts %}
