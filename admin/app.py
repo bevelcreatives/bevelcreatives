@@ -504,11 +504,12 @@ def api_settings_dm_rule():
 # only (rejects typos/garbage early with a clean error); the bot's own fixed
 # slot->path dict is the real security boundary, since it never reads a path
 # from any payload.
-_TICKET_IMAGE_SLOTS = {"ticket_qr", "ticket_bank_qr", "ticket_open_gif", "drops_gif", "ty_gif"}
+_TICKET_IMAGE_SLOTS = {"ticket_qr", "ticket_bank_qr", "ticket_open_gif", "drops_gif", "ty_gif", "drop_winner_gif"}
 _UTIL_IMAGE_SLOTS   = {"util_qr", "util_bank_qr"}
 _IMAGE_SLOT_CONTENT_TYPES = {
     "ticket_qr": "image/png", "ticket_bank_qr": "image/png",
     "ticket_open_gif": "image/gif", "drops_gif": "image/gif", "ty_gif": "image/gif",
+    "drop_winner_gif": "image/gif",
     "util_qr": "image/png", "util_bank_qr": "image/png",
 }
 _MAX_IMAGE_UPLOAD_BYTES = 8 * 1024 * 1024  # matches Discord's own non-Nitro attachment cap

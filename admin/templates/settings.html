@@ -118,13 +118,38 @@
     </div>
   </div>
 
-  <!-- 6: Drops Announcements -->
+  <!-- 6: Daily Robux Drops -->
   <div class="card settings-card">
-    <div class="settings-card-title">Drops Announcements</div>
+    <div class="settings-card-title">Daily Robux Drops</div>
     <label class="settings-field">
       <span class="settings-field-label">Drops Channel</span>
       <select data-domain="ticket" data-key="drops_channel_id" data-kind="channel"></select>
       <span class="field-status" data-status-for="drops_channel_id"></span>
+    </label>
+    <label class="settings-field">
+      <span class="settings-field-label">Winner Announce Channel</span>
+      <select data-domain="ticket" data-key="drop_winner_channel_id" data-kind="channel"></select>
+      <span class="field-status" data-status-for="drop_winner_channel_id"></span>
+    </label>
+    <label class="settings-field">
+      <span class="settings-field-label">Amount Min (Robux)</span>
+      <input type="text" data-domain="ticket" data-key="drop_amount_min" data-kind="text"/>
+      <span class="field-status" data-status-for="drop_amount_min"></span>
+    </label>
+    <label class="settings-field">
+      <span class="settings-field-label">Amount Max (Robux)</span>
+      <input type="text" data-domain="ticket" data-key="drop_amount_max" data-kind="text"/>
+      <span class="field-status" data-status-for="drop_amount_max"></span>
+    </label>
+    <label class="settings-field">
+      <span class="settings-field-label">Drops Per Day (1-20)</span>
+      <input type="text" data-domain="ticket" data-key="drops_per_day" data-kind="text"/>
+      <span class="field-status" data-status-for="drops_per_day"></span>
+    </label>
+    <label class="settings-field">
+      <span class="settings-field-label">Claim Role (this role or higher)</span>
+      <select data-domain="ticket" data-key="drop_min_role_id" data-kind="role"></select>
+      <span class="field-status" data-status-for="drop_min_role_id"></span>
     </label>
     <div class="settings-field">
       <span class="settings-field-label">Drops GIF</span>
@@ -133,6 +158,14 @@
         <span>Replace GIF</span>
       </label>
       <span class="field-status" data-status-for="img:drops_gif"></span>
+    </div>
+    <div class="settings-field">
+      <span class="settings-field-label">Winner GIF</span>
+      <label class="file-upload">
+        <input type="file" accept="image/gif" data-domain="ticket" data-slot="drop_winner_gif" data-endpoint="ticket-image"/>
+        <span>Replace GIF</span>
+      </label>
+      <span class="field-status" data-status-for="img:drop_winner_gif"></span>
     </div>
   </div>
 
