@@ -177,21 +177,10 @@ def _fmt(dt: datetime | None) -> str:
     return dt.astimezone(NPT).strftime("%Y-%m-%d %H:%M") if dt else ""
 
 
-def _edit_flags(log_history: list[str]) -> tuple[bool, bool]:
-    username_edited = False
-    amount_edited = False
-    for event in log_history or []:
-        if "Edited:" not in event:
-            continue
-        parts = re.findall(r"`([^`]*)`", event)
-        if len(parts) >= 4:
-            if parts[0] != parts[1]:
-                username_edited = True
-            if parts[2] != parts[3]:
-                amount_edited = True
-        if username_edited and amount_edited:
-            break
-    return username_edited, amount_edited
+def _was_edited(log_history: list[str]) -> bool:
+    """True if this ticket has ever had an "Edited:" entry in its audit
+    log, regardless of whether the username, amount, or both changed."""
+    return any("Edited:" in event for event in (log_history or []))
 
 
 def _normalise(o: dict) -> dict:
@@ -199,7 +188,7 @@ def _normalise(o: dict) -> dict:
     created = _created_dt(o)
     status = o.get("status") or ("completed" if o.get("completed_at") else "open")
     log_history = list(o.get("log_history") or [])
-    username_edited, amount_edited = _edit_flags(log_history)
+    edited = _was_edited(log_history)
     out = {
         "order":             o.get("order"),
         "roblox":            o.get("roblox") or "",
@@ -230,8 +219,7 @@ def _normalise(o: dict) -> dict:
         "screenshot_received_at": o.get("screenshot_received_at") or "",
         "screenshot_at_display": _fmt(_screenshot_dt(o)),
         "log_history":       log_history,
-        "roblox_edited":     username_edited,
-        "amount_edited":     amount_edited,
+        "edited":            edited,
         "archived_at":       o.get("archived_at") or "",
         "completed_by_name": o.get("completed_by_name") or "",
         "cancelled_by_name": o.get("cancelled_by_name") or "",

@@ -79,9 +79,9 @@
       `Order #${o.order} &nbsp;<span class="badge badge-${o.status}">${escapeHtml(o.status_label)}</span>`;
 
     const items = [
-      ['Roblox Username',    (o.roblox_edited ? '📝 ' : '') + (o.roblox || '—'), false],
-      ['Display Name',       o.roblox_display_name || o.roblox || '—',           false],
-      ['Amount (Robux)',     (o.amount_edited ? '📝 ' : '') + fmt(o.amount),     false],
+      ['Roblox Username',    (o.edited ? '📝 ' : '') + (o.roblox || '—'), false],
+      ['Display Name',       o.roblox_display_name || o.roblox || '—',    false],
+      ['Amount (Robux)',     fmt(o.amount),                                false],
       ['Discord Username',   o.discord_name,                                      false],
       ['Discord User ID',    o.discord_user_id,                                   true ],
       ['Ticket Opened',      o.created_at_display,                                true ],

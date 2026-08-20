@@ -29,6 +29,19 @@
   // Track which order row is currently selected
   let activeOrderNo = null;
 
+  // Bulk complete
+  const bulkBtn          = $('#bulk-complete-btn');
+  const bulkCountEl      = $('#bulk-complete-count');
+  const bulkModal        = $('#bulk-modal');
+  const bulkConfirmView  = $('#bulk-confirm-view');
+  const bulkProgressView = $('#bulk-progress-view');
+  const bulkResultView   = $('#bulk-result-view');
+  const bulkConfirmText  = $('#bulk-confirm-text');
+  const bulkConfirmBtn   = $('#bulk-confirm');
+  const bulkResultText   = $('#bulk-result-text');
+  let selectedOrders = new Set();
+  let bulkInProgress = false;
+
   // ── Helpers ────────────────────────────────────────────────
   function params() {
     const p = new URLSearchParams();
@@ -68,7 +81,7 @@
 
   // ── Load orders table ──────────────────────────────────────
   async function loadOrders() {
-    tbody.innerHTML = '<tr class="no-hover"><td colspan="6" class="muted muted-center">Loading…</td></tr>';
+    tbody.innerHTML = '<tr class="no-hover"><td colspan="7" class="muted muted-center">Loading…</td></tr>';
     try {
       const res = await fetch(API + '/api/orders?' + params().toString());
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -82,28 +95,37 @@
         if (activeRow) activeRow.classList.add('active-row');
       }
     } catch (err) {
-      tbody.innerHTML = `<tr class="no-hover"><td colspan="6" class="muted muted-center">Failed to load: ${escapeHtml(err.message)}</td></tr>`;
+      tbody.innerHTML = `<tr class="no-hover"><td colspan="7" class="muted muted-center">Failed to load: ${escapeHtml(err.message)}</td></tr>`;
     }
   }
 
   function render(orders) {
     if (!orders.length) {
-      tbody.innerHTML = '<tr class="no-hover"><td colspan="6" class="muted muted-center">No orders match your filters.</td></tr>';
+      tbody.innerHTML = '<tr class="no-hover"><td colspan="7" class="muted muted-center">No orders match your filters.</td></tr>';
       return;
     }
     tbody.innerHTML = orders.map(o => `
       <tr data-order="${o.order}" class="${o.order === activeOrderNo ? 'active-row' : ''}">
         <td class="mono">${escapeHtml(o.created_at_display || '—')}</td>
-        <td>${o.roblox_edited ? '📝 ' : ''}${escapeHtml(o.roblox || '—')}</td>
-        <td class="num">${o.amount_edited ? '📝 ' : ''}${fmtNum(o.amount)}</td>
+        <td>${o.edited ? '📝 ' : ''}${escapeHtml(o.roblox || '—')}</td>
+        <td class="num">${fmtNum(o.amount)}</td>
         <td>${escapeHtml(o.discord_name || '—')}</td>
         <td><span class="badge badge-${o.status}">${escapeHtml(o.status_label)}</span></td>
         <td class="muted col-order-num">#${o.order}</td>
+        <td class="td-check">
+          ${o.status === 'awaiting_review'
+            ? `<input type="checkbox" data-check="${o.order}" ${selectedOrders.has(o.order) ? 'checked' : ''} title="Select for bulk complete"/>`
+            : ''}
+        </td>
       </tr>
     `).join('');
 
     tbody.querySelectorAll('tr[data-order]').forEach(tr => {
       tr.addEventListener('click', () => openDetail(tr.dataset.order, tr));
+    });
+    tbody.querySelectorAll('input[data-check]').forEach(cb => {
+      cb.addEventListener('click', e => e.stopPropagation());
+      cb.addEventListener('change', () => toggleSelect(parseInt(cb.dataset.check, 10), cb.checked));
     });
   }
 
@@ -142,9 +164,9 @@
 
     // Info rows
     const items = [
-      ['Roblox Username',    (o.roblox_edited ? '📝 ' : '') + (o.roblox || '—'), false],
+      ['Roblox Username',    (o.edited ? '📝 ' : '') + (o.roblox || '—'),        false],
       ['Display Name',       o.roblox_display_name || o.roblox || '—',           false],
-      ['Amount (Robux)',     (o.amount_edited ? '📝 ' : '') + fmtNum(o.amount),  false],
+      ['Amount (Robux)',     fmtNum(o.amount),                                    false],
       ['Discord Username',   o.discord_name,                                      false],
       ['Discord User ID',    o.discord_user_id,                                   true ],
       ['Ticket Opened',      o.created_at_display,                                true ],
@@ -256,6 +278,94 @@
   clearConfirmBtn.addEventListener('click', clearData);
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && !clearModal.hidden) closeClearModal();
+  });
+
+  // ── Bulk complete ──────────────────────────────────────────
+  function toggleSelect(orderNo, checked) {
+    if (checked) selectedOrders.add(orderNo);
+    else selectedOrders.delete(orderNo);
+    updateBulkButton();
+  }
+
+  function updateBulkButton() {
+    const n = selectedOrders.size;
+    bulkBtn.hidden = n === 0;
+    bulkCountEl.textContent = n || '';
+  }
+
+  function openBulkModal() {
+    if (!selectedOrders.size) return;
+    bulkConfirmView.hidden = false;
+    bulkProgressView.hidden = true;
+    bulkResultView.hidden = true;
+    const n = selectedOrders.size;
+    bulkConfirmText.textContent = `Complete ${n} selected order${n === 1 ? '' : 's'}?`;
+    bulkModal.hidden = false;
+  }
+
+  function closeBulkModal() {
+    if (bulkInProgress) return; // don't allow closing mid-flight
+    bulkModal.hidden = true;
+  }
+
+  async function submitBulkComplete() {
+    const orders = Array.from(selectedOrders);
+    bulkInProgress = true;
+    bulkConfirmView.hidden = true;
+    bulkProgressView.hidden = false;
+
+    try {
+      const res = await fetch(API + '/api/bulk-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orders }),
+      });
+      const d = await res.json().catch(() => ({}));
+      bulkInProgress = false;
+      if (!res.ok || d.error) {
+        showBulkResult(null, d.message || d.error || `HTTP ${res.status}`);
+        return;
+      }
+      showBulkResult(d.results || []);
+    } catch (err) {
+      bulkInProgress = false;
+      showBulkResult(null, `Failed to submit: ${err.message}`);
+    }
+  }
+
+  function showBulkResult(results, errorMsg) {
+    bulkProgressView.hidden = true;
+    bulkResultView.hidden = false;
+
+    if (errorMsg) {
+      bulkResultText.innerHTML = `<p class="bulk-result-bad">${escapeHtml(errorMsg)}</p>`;
+    } else {
+      const ok = results.filter(r => r.ok);
+      const bad = results.filter(r => !r.ok);
+      const ERROR_LABELS = {
+        not_found: 'no longer an active ticket',
+        no_screenshot: 'no payment screenshot on record',
+        guild_not_found: 'server could not be resolved',
+      };
+      let html = `<p><strong>${ok.length}</strong> completed${bad.length ? `, <strong>${bad.length}</strong> failed` : ''}.</p>`;
+      if (bad.length) {
+        html += '<ul class="bulk-result-list">' + bad.map(r =>
+          `<li><span>#${r.order ?? '?'}</span><span class="bulk-result-bad">${escapeHtml(ERROR_LABELS[r.error] || r.error || 'failed')}</span></li>`
+        ).join('') + '</ul>';
+      }
+      bulkResultText.innerHTML = html;
+    }
+
+    selectedOrders.clear();
+    updateBulkButton();
+    loadOrders();
+  }
+
+  bulkBtn.addEventListener('click', openBulkModal);
+  bulkModal.querySelectorAll('[data-bulk-close]').forEach(el => el.addEventListener('click', closeBulkModal));
+  bulkConfirmBtn.addEventListener('click', submitBulkComplete);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !bulkModal.hidden) closeBulkModal();
   });
 
   // ── Filters ────────────────────────────────────────────────

@@ -51,10 +51,11 @@
               <th>Discord</th>
               <th>Status</th>
               <th class="col-order-num">#</th>
+              <th class="th-check" title="Select to bulk-complete">✓</th>
             </tr>
           </thead>
           <tbody id="orders-body">
-            <tr><td colspan="6" class="muted muted-center">Loading…</td></tr>
+            <tr><td colspan="7" class="muted muted-center">Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -99,6 +100,40 @@
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
         <button id="clear-cancel" class="btn btn-ghost btn-compact" data-clear-close>Cancel</button>
         <button id="clear-confirm" class="btn btn-compact" disabled>Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk-complete modal -->
+<div class="modal" id="bulk-modal" hidden>
+  <div class="modal-backdrop" data-bulk-close></div>
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="modal-title">Complete Selected Orders</div>
+      <button class="btn-close" data-bulk-close>&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="bulk-confirm-view">
+        <p id="bulk-confirm-text">Complete the selected orders?</p>
+        <p class="muted" style="font-size:13px">
+          Each order will be marked completed exactly like pressing Complete inside its ticket:
+          the customer is notified by DM, their customer role is granted, the completed-orders
+          log is updated, and the ticket channel closes.
+        </p>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
+          <button id="bulk-cancel" class="btn btn-ghost btn-compact" data-bulk-close>Cancel</button>
+          <button id="bulk-confirm" class="btn btn-primary btn-compact">Complete</button>
+        </div>
+      </div>
+      <div id="bulk-progress-view" hidden>
+        <p id="bulk-progress-text" class="muted">Completing orders — this can take up to a minute and a half while ticket channels close…</p>
+      </div>
+      <div id="bulk-result-view" hidden>
+        <div id="bulk-result-text"></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:18px;">
+          <button id="bulk-result-close" class="btn btn-compact" data-bulk-close>Done</button>
+        </div>
       </div>
     </div>
   </div>
