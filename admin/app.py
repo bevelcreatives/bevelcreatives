@@ -178,6 +178,7 @@ def api_orders():
             "roblox":             o["roblox"],
             "roblox_display_name": o.get("roblox_display_name", ""),
             "edited":             o["edited"],
+            "is_test":            o["is_test"],
             "amount":             o["amount"],
             "discord_name":       o["discord_name"],
             "discord_user_id":    o["discord_user_id"],

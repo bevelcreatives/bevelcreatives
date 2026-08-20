@@ -220,6 +220,7 @@ def _normalise(o: dict) -> dict:
         "screenshot_at_display": _fmt(_screenshot_dt(o)),
         "log_history":       log_history,
         "edited":            edited,
+        "is_test":           bool(o.get("is_test")),
         "archived_at":       o.get("archived_at") or "",
         "completed_by_name": o.get("completed_by_name") or "",
         "cancelled_by_name": o.get("cancelled_by_name") or "",
@@ -328,9 +329,13 @@ def filter_orders(orders: list[dict], q: str = "", status: str = "",
 # â”€â”€â”€â”€â”€â”€â”€â”€â”€ analytics â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def analytics(date_from: str = "", date_to: str = "") -> dict:
-    """Return summary stats and per-day buckets between date_from and date_to (inclusive)."""
+    """Return summary stats and per-day buckets between date_from and date_to (inclusive).
+    Orders marked as test (via the bot's /test command) are excluded entirely -
+    they still show up in the raw orders list (marked with 🧪) but never
+    count toward any aggregate number here."""
     orders = all_orders()
     filtered = filter_orders(orders, date_from=date_from, date_to=date_to)
+    filtered = [o for o in filtered if not o["is_test"]]
 
     by_status: dict[str, int] = {s: 0 for s in STATUSES}
     total_amount_completed = 0
@@ -445,11 +450,15 @@ def user_history(q: str, date_from: str = "", date_to: str = "") -> dict:
                 or q_clean in str(o.get("discord_name", "")).lower()):
             matches.append(o)
 
+    # Test orders stay in `matches` (marked with 🧪 on the frontend) so
+    # they're still visible for troubleshooting, but never count toward
+    # the aggregate totals below - same rule as analytics()/leaderboard().
+    non_test = [m for m in matches if not m["is_test"]]
     totals = {
-        "orders":      len(matches),
-        "completed":   sum(1 for m in matches if m["status"] == "completed"),
-        "cancelled":   sum(1 for m in matches if m["status"] == "cancelled"),
-        "amount_total_completed": sum(m["amount"] for m in matches if m["status"] == "completed"),
+        "orders":      len(non_test),
+        "completed":   sum(1 for m in non_test if m["status"] == "completed"),
+        "cancelled":   sum(1 for m in non_test if m["status"] == "cancelled"),
+        "amount_total_completed": sum(m["amount"] for m in non_test if m["status"] == "completed"),
     }
     return {"query": q, "matches": matches, "totals": totals}
 
@@ -567,7 +576,7 @@ def ineligible_choice_stats(date_from: str = "", date_to: str = "") -> dict:
 # â”€â”€â”€â”€â”€â”€â”€â”€â”€ leaderboard â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def leaderboard(date_from: str = "", date_to: str = "") -> dict:
-    """Return top users ranked by total Robux purchased (completed orders only)."""
+    """Return top users ranked by total Robux purchased (completed, non-test orders only)."""
     orders = all_orders()
     filtered = filter_orders(orders, date_from=date_from, date_to=date_to)
 
@@ -575,7 +584,7 @@ def leaderboard(date_from: str = "", date_to: str = "") -> dict:
     discord_data: dict[str, dict] = {}
 
     for o in filtered:
-        if o["status"] != "completed":
+        if o["status"] != "completed" or o["is_test"]:
             continue
         amount = o["amount"]
         roblox  = o["roblox"] or "â€”"

@@ -79,7 +79,7 @@
       `Order #${o.order} &nbsp;<span class="badge badge-${o.status}">${escapeHtml(o.status_label)}</span>`;
 
     const items = [
-      ['Roblox Username',    (o.edited ? '📝 ' : '') + (o.roblox || '—'), false],
+      ['Roblox Username',    (o.is_test ? '🧪 ' : '') + (o.edited ? '📝 ' : '') + (o.roblox || '—'), false],
       ['Display Name',       o.roblox_display_name || o.roblox || '—',    false],
       ['Amount (Robux)',     fmt(o.amount),                                false],
       ['Discord Username',   o.discord_name,                                      false],
@@ -174,7 +174,7 @@
       ordersBody.innerHTML = data.matches.map(o => `
         <tr data-order="${o.order}">
           <td class="mono">${escapeHtml(o.created_at_display || '—')}</td>
-          <td>${escapeHtml(o.roblox || '—')}</td>
+          <td>${o.is_test ? '🧪 ' : ''}${o.edited ? '📝 ' : ''}${escapeHtml(o.roblox || '—')}</td>
           <td class="num">${fmt(o.amount)}</td>
           <td>${escapeHtml(o.discord_name || '—')}</td>
           <td><span class="badge badge-${o.status}">${escapeHtml(o.status_label || o.status)}</span></td>

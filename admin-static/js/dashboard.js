@@ -107,7 +107,7 @@
     tbody.innerHTML = orders.map(o => `
       <tr data-order="${o.order}" class="${o.order === activeOrderNo ? 'active-row' : ''}">
         <td class="mono">${escapeHtml(o.created_at_display || '—')}</td>
-        <td>${o.edited ? '📝 ' : ''}${escapeHtml(o.roblox || '—')}</td>
+        <td>${o.is_test ? '🧪 ' : ''}${o.edited ? '📝 ' : ''}${escapeHtml(o.roblox || '—')}</td>
         <td class="num">${fmtNum(o.amount)}</td>
         <td>${escapeHtml(o.discord_name || '—')}</td>
         <td><span class="badge badge-${o.status}">${escapeHtml(o.status_label)}</span></td>
@@ -164,7 +164,7 @@
 
     // Info rows
     const items = [
-      ['Roblox Username',    (o.edited ? '📝 ' : '') + (o.roblox || '—'),        false],
+      ['Roblox Username',    (o.is_test ? '🧪 ' : '') + (o.edited ? '📝 ' : '') + (o.roblox || '—'), false],
       ['Display Name',       o.roblox_display_name || o.roblox || '—',           false],
       ['Amount (Robux)',     fmtNum(o.amount),                                    false],
       ['Discord Username',   o.discord_name,                                      false],
