@@ -1,8 +1,4 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "**/*", "use": "@vercel/static" }
-  ],
   "rewrites": [
     { "source": "/admin/static/:path*", "destination": "/admin-static/:path*" },
     { "source": "/admin",               "destination": "/api/admin" },
