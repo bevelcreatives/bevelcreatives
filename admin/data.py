@@ -328,6 +328,30 @@ def filter_orders(orders: list[dict], q: str = "", status: str = "",
 
 # â”€â”€â”€â”€â”€â”€â”€â”€â”€ analytics â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+def _has_screenshot(o: dict) -> bool:
+    """True once a ticket has a payment screenshot on file - matches the
+    same "order actually placed" definition the bot's own daily report uses
+    (compute_daily_report in TicketV2/ticketv2.py), so a ticket someone
+    opened and abandoned without ever paying doesn't count."""
+    return bool(o.get("screenshot_received_at") or o.get("screenshot_filename") or o.get("screenshot_url"))
+
+
+def open_ticket_value() -> dict:
+    """Total Robux value + count of tickets that are CURRENTLY open
+    (status "open" or "awaiting_review") and have a payment screenshot on
+    file - a live snapshot of "money on the table right now", deliberately
+    NOT affected by the analytics page's date-range filter (there's no
+    sensible way to ask what was "currently open" during some past range,
+    only right now). Test orders are excluded, same as analytics()."""
+    orders = [o for o in all_orders() if not o["is_test"]]
+    open_with_ss = [o for o in orders
+                    if o["status"] in ("open", "awaiting_review") and _has_screenshot(o)]
+    return {
+        "current_ticket_value": sum(o["amount"] for o in open_with_ss),
+        "current_ticket_count": len(open_with_ss),
+    }
+
+
 def analytics(date_from: str = "", date_to: str = "") -> dict:
     """Return summary stats and per-day buckets between date_from and date_to (inclusive).
     Orders marked as test (via the bot's /test command) are excluded entirely -
@@ -387,6 +411,7 @@ def analytics(date_from: str = "", date_to: str = "") -> dict:
         "total_open":        by_status.get("open", 0),
         "total_awaiting":    by_status.get("awaiting_review", 0),
         "by_status":         by_status,
+        **open_ticket_value(),
         "days":              days,
         "series": {
             "opened":       [buckets[d]["opened"]       for d in days],

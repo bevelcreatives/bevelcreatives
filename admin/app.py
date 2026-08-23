@@ -720,6 +720,8 @@ def export_analytics():
         ("Still Open",                        stats["total_open"]),
         ("Awaiting Review",                   stats["total_awaiting"]),
         ("Total Amount (Robux, completed)",   stats["total_amount_completed"]),
+        ("Current Ticket Value (Robux, open with screenshot)", stats["current_ticket_value"]),
+        ("Current Ticket Count (open with screenshot)",        stats["current_ticket_count"]),
         ("",                                  ""),
         ("Button Clicks - Total",             btn["totals"].get("total", 0)),
         ("Button Clicks - Not In Group",      btn["totals"].get("not_joined", 0)),

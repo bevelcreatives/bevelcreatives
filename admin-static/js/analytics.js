@@ -38,6 +38,8 @@
       $('#s-auto').textContent      = fmt(data.total_auto_deleted);
       $('#s-rejected').textContent  = fmt(data.total_rejected);
       $('#s-awaiting').textContent  = fmt(data.total_awaiting);
+      $('#s-current-value').textContent = fmt(data.current_ticket_value);
+      $('#s-current-count').textContent = fmt(data.current_ticket_count);
 
       const t = btnData.totals || {};
       $('#bs-total').textContent      = fmt(t.total);
