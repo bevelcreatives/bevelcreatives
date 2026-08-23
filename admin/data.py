@@ -352,24 +352,81 @@ def open_ticket_value() -> dict:
     }
 
 
+def _date_in_range(d, date_from: str, date_to: str) -> bool:
+    if date_from:
+        try:
+            if d < datetime.strptime(date_from, "%Y-%m-%d").date():
+                return False
+        except Exception:
+            pass
+    if date_to:
+        try:
+            if d > datetime.strptime(date_to, "%Y-%m-%d").date():
+                return False
+        except Exception:
+            pass
+    return True
+
+
 def analytics(date_from: str = "", date_to: str = "") -> dict:
     """Return summary stats and per-day buckets between date_from and date_to (inclusive).
     Orders marked as test (via the bot's /test command) are excluded entirely -
     they still show up in the raw orders list (marked with 🧪) but never
-    count toward any aggregate number here."""
-    orders = all_orders()
-    filtered = filter_orders(orders, date_from=date_from, date_to=date_to)
-    filtered = [o for o in filtered if not o["is_test"]]
+    count toward any aggregate number here.
+
+    Each category is filtered by ITS OWN relevant timestamp, not by when the
+    ticket was originally opened: "Tickets Opened"/Open/Awaiting Review are
+    about created_at, but Completed/Cancelled/Rejected/Auto-deleted are
+    about completed_at/cancelled_at/rejected_at/auto_deleted_at - a ticket
+    opened yesterday and completed today counts as today's completion, not
+    yesterday's. Mirrors compute_stats() on the bot side (TicketV2/data_store.py),
+    which already does this correctly."""
+    all_o = [o for o in all_orders() if not o["is_test"]]
+
+    # "Opened"/Open/Awaiting Review: filtered by creation date, as before.
+    created_filtered = filter_orders(all_o, date_from=date_from, date_to=date_to)
+
+    # Everything else: filtered by its own event's date.
+    def event_filtered(status: str, dt_fn):
+        out = []
+        for o in all_o:
+            if o["status"] != status:
+                continue
+            dt = dt_fn(o)
+            if dt and _date_in_range(dt.astimezone(NPT).date(), date_from, date_to):
+                out.append(o)
+        return out
+
+    completed_filtered    = event_filtered("completed",    _completed_dt)
+    cancelled_filtered    = event_filtered("cancelled",    _cancelled_dt)
+    rejected_filtered     = event_filtered("rejected",     _rejected_dt)
+    auto_deleted_filtered = event_filtered("auto_deleted", _deleted_dt)
 
     by_status: dict[str, int] = {s: 0 for s in STATUSES}
-    total_amount_completed = 0
-    for o in filtered:
-        by_status[o["status"]] = by_status.get(o["status"], 0) + 1
-        if o["status"] == "completed":
-            total_amount_completed += o["amount"]
+    for o in created_filtered:
+        if o["status"] in ("open", "awaiting_review"):
+            by_status[o["status"]] += 1
+    by_status["completed"]    = len(completed_filtered)
+    by_status["cancelled"]    = len(cancelled_filtered)
+    by_status["rejected"]     = len(rejected_filtered)
+    by_status["auto_deleted"] = len(auto_deleted_filtered)
+    total_amount_completed = sum(o["amount"] for o in completed_filtered)
 
-    # Daily buckets
-    start_d, end_d = _resolve_range(filtered, date_from, date_to)
+    # Daily buckets. When no explicit range is given ("All time"), the
+    # displayable span must cover every relevant event date, not just
+    # creation dates - a ticket created 95 days ago but completed today
+    # still needs today on the axis even if creation-only bounds wouldn't
+    # reach that far.
+    if date_from and date_to:
+        candidate_dates = []
+    else:
+        candidate_dates = []
+        for o in all_o:
+            for dt_fn in (_created_dt, _completed_dt, _cancelled_dt, _rejected_dt, _deleted_dt):
+                dt = dt_fn(o)
+                if dt:
+                    candidate_dates.append(dt.astimezone(NPT).date())
+    start_d, end_d = _resolve_range(candidate_dates, date_from, date_to)
     days: list[str] = []
     if start_d and end_d and start_d <= end_d:
         d = start_d
@@ -380,29 +437,38 @@ def analytics(date_from: str = "", date_to: str = "") -> dict:
     buckets: dict[str, dict[str, int]] = {d: {"completed": 0, "cancelled": 0, "rejected": 0,
                                               "auto_deleted": 0, "opened": 0,
                                               "amount": 0} for d in days}
-    for o in filtered:
-        dt = _parse_iso(o.get("created_at"))
-        if not dt:
-            continue
+    for o in created_filtered:
+        dt = _created_dt(o)
+        if dt:
+            day = dt.astimezone(NPT).strftime("%Y-%m-%d")
+            if day in buckets:
+                buckets[day]["opened"] += 1
+    for o in completed_filtered:
+        dt = _completed_dt(o)
         day = dt.astimezone(NPT).strftime("%Y-%m-%d")
-        if day not in buckets:
-            continue
-        buckets[day]["opened"] += 1
-        st = o["status"]
-        if st == "completed":
+        if day in buckets:
             buckets[day]["completed"] += 1
             buckets[day]["amount"] += o["amount"]
-        elif st == "cancelled":
+    for o in cancelled_filtered:
+        dt = _cancelled_dt(o)
+        day = dt.astimezone(NPT).strftime("%Y-%m-%d")
+        if day in buckets:
             buckets[day]["cancelled"] += 1
-        elif st == "rejected":
+    for o in rejected_filtered:
+        dt = _rejected_dt(o)
+        day = dt.astimezone(NPT).strftime("%Y-%m-%d")
+        if day in buckets:
             buckets[day]["rejected"] += 1
-        elif st == "auto_deleted":
+    for o in auto_deleted_filtered:
+        dt = _deleted_dt(o)
+        day = dt.astimezone(NPT).strftime("%Y-%m-%d")
+        if day in buckets:
             buckets[day]["auto_deleted"] += 1
 
     return {
         "from":              start_d.strftime("%Y-%m-%d") if start_d else "",
         "to":                end_d.strftime("%Y-%m-%d") if end_d else "",
-        "total_orders":      len(filtered),
+        "total_orders":      len(created_filtered),
         "total_amount_completed": total_amount_completed,
         "total_completed":   by_status.get("completed", 0),
         "total_cancelled":   by_status.get("cancelled", 0),
@@ -424,8 +490,11 @@ def analytics(date_from: str = "", date_to: str = "") -> dict:
     }
 
 
-def _resolve_range(filtered: list[dict], date_from: str, date_to: str):
-    """Derive a (start, end) date span from explicit args or from the data itself."""
+def _resolve_range(dates: list, date_from: str, date_to: str):
+    """Derive a (start, end) date span from explicit args, or (for whichever
+    side is missing) from the given candidate dates - pass every relevant
+    event date (created/completed/cancelled/rejected/auto-deleted), not
+    just creation dates, so "All time" always covers the full activity span."""
     if date_from:
         try:
             start = datetime.strptime(date_from, "%Y-%m-%d").date()
@@ -443,11 +512,6 @@ def _resolve_range(filtered: list[dict], date_from: str, date_to: str):
     if start and end:
         return start, end
 
-    dates = []
-    for o in filtered:
-        dt = _parse_iso(o.get("created_at"))
-        if dt:
-            dates.append(dt.astimezone(NPT).date())
     if not dates:
         today = datetime.now(NPT).date()
         return start or today, end or today
