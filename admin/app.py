@@ -75,6 +75,51 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
 _KV_URL        = os.getenv("KV_REST_API_URL", "")
 _KV_TOKEN      = os.getenv("KV_REST_API_TOKEN", "")
 
+# Direct VPS API - the bot's own authenticated HTTP endpoint, replacing the
+# Upstash/Vercel KV bridge above (KV's monthly request quota kept getting
+# exhausted by the old poll-every-3-seconds relay pattern). Every read/write
+# below tries this first and only falls back to the KV path when it's not
+# configured or the VPS is unreachable, so unsetting VPS_API_URL is a
+# trivial rollback to the old behaviour.
+_VPS_API_URL   = os.getenv("VPS_API_URL", "").rstrip("/")
+_VPS_API_TOKEN = os.getenv("VPS_API_TOKEN", "")
+
+def _vps_get(path: str, timeout: int = 8):
+    """Returns parsed JSON from the VPS API, or None if not configured/reachable."""
+    if not _VPS_API_URL or not _VPS_API_TOKEN:
+        return None
+    try:
+        resp = _requests.get(
+            f"{_VPS_API_URL}{path}",
+            headers={"Authorization": f"Bearer {_VPS_API_TOKEN}"},
+            timeout=timeout,
+        )
+        if resp.ok:
+            return resp.json()
+    except Exception:
+        pass
+    return None
+
+def _vps_post(path: str, payload: dict, timeout: int = 15):
+    """POSTs JSON to the VPS API and returns (status_code, parsed_json), or
+    None if not configured/reachable (caller should fall back to KV)."""
+    if not _VPS_API_URL or not _VPS_API_TOKEN:
+        return None
+    try:
+        resp = _requests.post(
+            f"{_VPS_API_URL}{path}",
+            json=payload,
+            headers={"Authorization": f"Bearer {_VPS_API_TOKEN}"},
+            timeout=timeout,
+        )
+        try:
+            body = resp.json()
+        except ValueError:
+            body = {"error": "bad_response"}
+        return resp.status_code, body
+    except Exception:
+        return None
+
 if IS_PRODUCTION and app.secret_key == DEFAULT_SECRET_KEY:
     raise RuntimeError("SECRET_KEY must be set in production.")
 
@@ -207,7 +252,24 @@ def api_order_screenshot(order_no: int):
     if not match:
         return jsonify({"error": "not_found"}), 404
 
-    # Try KV first (uploaded by bot on screenshot receipt)
+    # Try the VPS API first (streamed straight from the bot's screenshots dir)
+    if _VPS_API_URL and _VPS_API_TOKEN:
+        try:
+            resp = _requests.get(
+                f"{_VPS_API_URL}/api/screenshot/{order_no}",
+                headers={"Authorization": f"Bearer {_VPS_API_TOKEN}"},
+                timeout=8,
+            )
+            if resp.ok:
+                return send_file(
+                    io.BytesIO(resp.content),
+                    mimetype=resp.headers.get("Content-Type", "image/png"),
+                    as_attachment=False,
+                )
+        except Exception:
+            pass
+
+    # Fall back to KV (uploaded by bot on screenshot receipt)
     if _KV_URL and _KV_TOKEN:
         try:
             resp = _requests.get(
@@ -311,6 +373,14 @@ def api_clear_data():
     if str(payload.get("key", "")).strip() != "5040":
         return jsonify({"error": "invalid_key"}), 403
 
+    # Try the VPS first - routes through the bot's own live state
+    # (bot.tickets + data_store), fixing a race the old direct-KV-write
+    # version had against the bot's next autosave.
+    vps_result = _vps_post("/api/clear-data", {})
+    if vps_result is not None:
+        status, body = vps_result
+        return jsonify(body), status
+
     clear_dashboard_data()
     return jsonify({"ok": True})
 
@@ -318,12 +388,20 @@ def api_clear_data():
 @app.route("/api/bulk-complete", methods=["POST"])
 @login_required
 def api_bulk_complete():
-    if not _KV_URL or not _KV_TOKEN:
-        return jsonify({"error": "kv_not_configured"}), 503
     payload = request.get_json(silent=True) or {}
     orders  = payload.get("orders", [])
     if not orders:
         return jsonify({"error": "no_orders"}), 400
+
+    # Try the VPS first - synchronous, no more 90 s poll-and-wait.
+    vps_result = _vps_post("/api/bulk-complete",
+                            {"orders": orders, "completed_by": "Dashboard Admin"})
+    if vps_result is not None:
+        status, body = vps_result
+        return jsonify(body), status
+
+    if not _KV_URL or not _KV_TOKEN:
+        return jsonify({"error": "kv_not_configured"}), 503
 
     ts  = int(_time.time() * 1000)
     cmd = json.dumps({"orders": orders, "ts": ts, "completed_by": "Dashboard Admin"})
@@ -384,10 +462,17 @@ def _kv_set(key: str, value: str):
 def _kv_del(key: str):
     _kv_raw(["DEL", key])
 
-def _kv_relay(cmd_key: str, result_key: str, payload: dict, timeout_s: int = 90):
-    """Shared write+poll helper for the bot command-relay pattern, extracted
-    from api_bulk_complete so every Settings write endpoint below doesn't
-    repeat the same ts/poll/cleanup logic."""
+def _kv_relay(cmd_key: str, result_key: str, payload: dict, timeout_s: int = 90,
+              vps_path: str | None = None):
+    """Applies one Settings-page write. Tries the direct VPS endpoint first
+    (synchronous, no polling) when `vps_path` is given; falls back to the
+    original KV write+poll command-relay pattern otherwise."""
+    if vps_path:
+        vps_result = _vps_post(vps_path, payload)
+        if vps_result is not None:
+            status, body = vps_result
+            return jsonify(body), status
+
     if not _KV_URL or not _KV_TOKEN:
         return jsonify({"error": "kv_not_configured"}), 503
 
@@ -423,6 +508,20 @@ def _kv_relay(cmd_key: str, result_key: str, payload: dict, timeout_s: int = 90)
 @app.route("/api/settings", methods=["GET"])
 @login_required
 def api_settings_get():
+    # Try the VPS API first - a handful of direct GETs, always fresh.
+    vps_ticket_data = _vps_get("/api/ticket_data")
+    if vps_ticket_data is not None:
+        vps_bot_config     = _vps_get("/api/bot_config")
+        vps_scheduled_dms  = _vps_get("/api/scheduled_dms")
+        vps_guild_structure = _vps_get("/api/guild_structure")
+        return jsonify({
+            "ticket_config":   vps_ticket_data.get("server_config", {}),
+            "util_config":     vps_bot_config or {},
+            "scheduled_dms":   vps_scheduled_dms or [],
+            "guild_structure": vps_guild_structure or {"channels": [], "categories": [], "roles": []},
+            "kv_configured":   True,
+        })
+
     ticket_config = {}
     ticket_raw = _kv_get("ticket_data")
     if ticket_raw:
@@ -472,7 +571,8 @@ def api_settings_ticket_field():
     if not key:
         return jsonify({"error": "missing_key"}), 400
     return _kv_relay("settings_cmd_ticket", "settings_result_ticket",
-                      {"kind": "field", "key": key, "value": payload.get("value")})
+                      {"kind": "field", "key": key, "value": payload.get("value")},
+                      vps_path="/api/settings/ticket-field")
 
 
 @app.route("/api/settings/util-field", methods=["POST"])
@@ -483,7 +583,8 @@ def api_settings_util_field():
     if not key:
         return jsonify({"error": "missing_key"}), 400
     return _kv_relay("settings_cmd_util", "settings_result_util",
-                      {"kind": "text_field", "key": key, "value": payload.get("value")})
+                      {"kind": "text_field", "key": key, "value": payload.get("value")},
+                      vps_path="/api/settings/util-field")
 
 
 @app.route("/api/settings/dm-rule", methods=["POST"])
@@ -497,7 +598,8 @@ def api_settings_dm_rule():
     for f in ("rule_id", "user_id", "time", "message"):
         if f in payload:
             cmd[f] = payload[f]
-    return _kv_relay("settings_cmd_util", "settings_result_util", cmd)
+    return _kv_relay("settings_cmd_util", "settings_result_util", cmd,
+                      vps_path="/api/settings/dm-rule")
 
 
 # Flask-side copy of the bot's own image-slot allow-list - defence in depth
@@ -514,7 +616,7 @@ _IMAGE_SLOT_CONTENT_TYPES = {
 }
 _MAX_IMAGE_UPLOAD_BYTES = 8 * 1024 * 1024  # matches Discord's own non-Nitro attachment cap
 
-def _handle_image_upload(allowed_slots: set):
+def _handle_image_upload(allowed_slots: set, vps_path: str):
     payload  = request.get_json(silent=True) or {}
     slot     = payload.get("slot")
     data_b64 = payload.get("data")
@@ -532,6 +634,14 @@ def _handle_image_upload(allowed_slots: set):
         return jsonify({"error": "invalid_base64"}), 400
     if len(raw) > _MAX_IMAGE_UPLOAD_BYTES:
         return jsonify({"error": "too_large", "message": "Max 8MB."}), 400
+
+    # Try the VPS first - written straight onto the bot's real local file,
+    # synchronously, instead of a KV blob its image_sync_loop pulls ~20s later.
+    vps_result = _vps_post(vps_path, {"slot": slot, "data": data_b64, "content_type": content_type})
+    if vps_result is not None:
+        status, body = vps_result
+        return jsonify(body), status
+
     if not _KV_URL or not _KV_TOKEN:
         return jsonify({"error": "kv_not_configured"}), 503
     ts = str(int(_time.time() * 1000))
@@ -548,13 +658,13 @@ def _handle_image_upload(allowed_slots: set):
 @app.route("/api/settings/ticket-image", methods=["POST"])
 @login_required
 def api_settings_ticket_image():
-    return _handle_image_upload(_TICKET_IMAGE_SLOTS)
+    return _handle_image_upload(_TICKET_IMAGE_SLOTS, "/api/settings/ticket-image")
 
 
 @app.route("/api/settings/util-image", methods=["POST"])
 @login_required
 def api_settings_util_image():
-    return _handle_image_upload(_UTIL_IMAGE_SLOTS)
+    return _handle_image_upload(_UTIL_IMAGE_SLOTS, "/api/settings/util-image")
 
 
 def _require_openpyxl():

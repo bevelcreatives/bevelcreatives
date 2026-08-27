@@ -45,6 +45,48 @@ DATA_FILE = _resolve_data_file()
 _KV_URL   = os.getenv("KV_REST_API_URL", "")
 _KV_TOKEN = os.getenv("KV_REST_API_TOKEN", "")
 
+# Direct VPS API - the bot's own authenticated HTTP endpoint, tried before
+# the KV path above (KV's monthly request quota kept getting exhausted by
+# the old poll-every-3-seconds relay pattern). Unsetting VPS_API_URL is a
+# trivial rollback to the old KV behaviour.
+_VPS_API_URL   = os.getenv("VPS_API_URL", "").rstrip("/")
+_VPS_API_TOKEN = os.getenv("VPS_API_TOKEN", "")
+
+def _vps_get(path: str, timeout: int = 8):
+    if not _VPS_API_URL or not _VPS_API_TOKEN:
+        return None
+    try:
+        import requests as _req
+        resp = _req.get(
+            f"{_VPS_API_URL}{path}",
+            headers={"Authorization": f"Bearer {_VPS_API_TOKEN}"},
+            timeout=timeout,
+        )
+        if resp.ok:
+            return resp.json()
+    except Exception:
+        pass
+    return None
+
+def _vps_post(path: str, payload: dict, timeout: int = 15):
+    if not _VPS_API_URL or not _VPS_API_TOKEN:
+        return None
+    try:
+        import requests as _req
+        resp = _req.post(
+            f"{_VPS_API_URL}{path}",
+            json=payload,
+            headers={"Authorization": f"Bearer {_VPS_API_TOKEN}"},
+            timeout=timeout,
+        )
+        try:
+            body = resp.json()
+        except ValueError:
+            body = {"error": "bad_response"}
+        return resp.status_code, body
+    except Exception:
+        return None
+
 # Canonical status set used throughout the dashboard.
 STATUSES = [
     "open",
@@ -66,7 +108,12 @@ STATUS_LABELS = {
 
 
 def _load_raw() -> dict:
-    # Prefer Vercel KV when deployed (set KV_REST_API_URL + KV_REST_API_TOKEN)
+    # Prefer the direct VPS API (set VPS_API_URL + VPS_API_TOKEN)
+    vps_data = _vps_get("/api/ticket_data")
+    if vps_data is not None:
+        return vps_data
+
+    # Fall back to Vercel KV when deployed (set KV_REST_API_URL + KV_REST_API_TOKEN)
     if _KV_URL and _KV_TOKEN:
         try:
             import requests as _req
