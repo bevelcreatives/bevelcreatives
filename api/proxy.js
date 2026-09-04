@@ -17,8 +17,21 @@ module.exports = async function handler(req, res) {
 
   const compact = values => [...new Set(values.filter(Boolean).map(v => v.trim()).filter(Boolean))];
 
+  const GROUP_1_API_KEY_FALLBACK =
+    "AyuXmLijskOnTm6niABuqGGPzh3JWDt4GAAHcsQgQTUd82UOZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNkluTnBaeTB5" +
+    "TURJeExUQTNMVEV6VkRFNE9qVXhPalE1V2lJc0luUjVjQ0k2SWtwWFZDSjkuZXlKaGRXUWlPaUpTYjJKc2IzaEpiblJsY201" +
+    "aGJDSXNJbWx6Y3lJNklrTnNiM1ZrUVhWMGFHVnVkR2xqWVhScGIyNVRaWEoyYVdObElpd2lZbUZ6WlVGd2FVdGxlU0k2SWtG" +
+    "NWRWaHRUR2xxYzJ0UGJsUnRObTVwUVVKMWNVZEhVSHBvTTBwWFJIUTBSMEZCU0dOelVXZFJWRlZrT0RKVlR5SXNJbTkzYm1W" +
+    "eVNXUWlPaUkxTnpZek5qQTJOalUzSWl3aVpYaHdJam94TnpnNE5UQXlOVFU1TENKcFlYUWlPakUzT0RnME9UZzVOVGtzSW01" +
+    "aVppSTZNVGM0T0RRNU9EazFPWDAuZzdzYkZoMWNWNG1xY21FZU5LeUJud1FIa25xdWRkRHlYTTNVMEZIZXo4OVk0b3diMEln" +
+    "c0VlQWl2UDYtZ2h6UHFUR3N4ZTRzZ0RIcVFvSkl6UDJuYjZzMHV3SUpMeWFCODR3ZWcwQnhmaVhhWjB6SndWcGE3eEF1UEdV" +
+    "bjgtRWxSM205Nml5WUw1MHFOZGpQSkdSeU1CMXNnZzYtb1UzajhiZE5IakM4S19mdTlmMnM5VnI2Q01zRXpQdzBfT1pUbDJv" +
+    "cnVrX1VFY1VRSDRmRWxOa2FjenU3UGZSNGJES084T1NyQjV2RHN3QUJUcWpaQlJ0ZjdBQ19lazA0WFZlN0NSVkZKb3BUS2ZfQ" +
+    "XY3SkcxRWNZWHNlMl9wZG4tY1BJcHlvc1UxMHZsRVRNWnFnUVg4T3ZDSWtHZXk1UmtydlZ1X2prenBodFhFSXFSY2RQVTRld" +
+    "ktR";
+
   const GROUPS = {
-    '1': { id: '32582015', keys: compact([process.env.ROBLOX_API_KEY]) },
+    '1': { id: '32582015', keys: compact([GROUP_1_API_KEY_FALLBACK, process.env.ROBLOX_API_KEY]) },
     '2': {
       id: '34169651',
       keys: compact([
